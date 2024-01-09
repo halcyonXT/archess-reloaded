@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=BioRhyme:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600;700&display=swap');
+
+:root {
+  --submain-spread: 97, 97, 97;
+  --submain: rgb(var(--submain-spread));
+
+  --main-spread: 229, 194, 153;
+  --main: rgb(var(--main-spread));
+
+  --button-normal-spread: 255, 255, 255;
+  --button-normal: rgb(var(--button-normal-spread));
+  --button-normal-font: rgb(0,0,0);
+  --button-normal-subfont: rgb(122, 122, 122);
+
+  --font-display: 'BioRhyme', serif;
+  --font-regular: 'Jost', sans-serif;
+}
+
+body, html {
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.-height-100 {
+  height: 100% !important;
+}
+
+.-width-100 {
+  width: 100%;
+}
+
+.-grid-center {
+  display: grid;
+  place-items: center;
+}
+
+.-fill-font {
+  fill: var(--button-normal-font);
+}
+
+.-icon-100 > svg {
+  height: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.-icon-80 > svg {
+  height: 80%;
+  aspect-ratio: 1 / 1;
+}
+
+.-icon-60 > svg {
+  height: 60%;
+  aspect-ratio: 1 / 1;
+}
+
+.-button-normal {
+  appearance: none;
+  display: flex;
+  color: var(--button-normal-font);
+  background-color: var(--button-normal);
+  border: 0.22rem outset rgba(27, 31, 35, .25);
+  border-radius: 0.3vmax;
+  box-shadow: rgba(27, 31, 35, .1) 0 0.5rem 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-block;
+  font-family: var(--font-display), system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  font-weight: 600;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+  transition-duration: 75ms;
+}
+
+.-button-normal:focus:not(:focus-visible):not(.focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+.-button-normal:hover {
+  transform: scale(1.02) rotate(-1deg);
+}
+
+.-button-normal:focus {
+  box-shadow: rgba(80, 80, 80, .4) 0 0 0 0.5rem;
+  outline: none;
+}
+
+.-button-normal:disabled {
+  border-color: rgba(27, 31, 35, .1);
+  color: rgba(255, 255, 255, .8);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.-button-normal:active {
+  transform: scale(1.01) rotate(-1deg);
+  border-style: inset;
+  box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+}

@@ -1,0 +1,161 @@
+/*
+.-frame-component {
+    position: absolute;
+    background: black;
+    opacity: var(--opacity-on-main-frame);
+    z-index: 10;
+    backdrop-filter: blur(1rem);
+}
+
+.-frame-component.top {
+    position: absolute;
+    height: var(--padding-on-main);
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+.-frame-component.bottom {
+    position: absolute;
+    height: var(--padding-on-main);
+    width: 100%;
+    top: calc(100% - var(--padding-on-main));
+    left: 0;
+}
+
+.-frame-component.left {
+    position: absolute;
+    width: var(--padding-on-main);
+    height: calc(100% - (2 * var(--padding-on-main)));
+    top: var(--padding-on-main);
+    left: 0;
+}
+
+.-frame-component.right {
+    position: absolute;
+    width: var(--padding-on-main);
+    height: calc(100% - (2 * var(--padding-on-main)));
+    top: var(--padding-on-main);
+    left: calc(100% - var(--padding-on-main));
+}
+
+*/
+
+.-background {
+    width: 110%;
+    height: 110%;
+    position: absolute;
+    top: -5%;
+    left: -5%;
+    object-fit: cover;
+}
+
+#root {
+    --padding: var(--padding-on-main);
+    display: grid;
+    place-items: center;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--padding);
+    background: var(--main);
+}
+
+@keyframes main_appear {
+    from {
+        transform: scale(1.05);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.-main {
+    --gr-border: 1px;
+    --gr-size: 20px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    padding: 2rem;
+    border: 2px solid var(--inv);
+    background: var(--main);
+    background: radial-gradient(circle at 0px 0px, 
+        var(--main) calc(69% - 1px), 
+        var(--inv) calc(69%), 
+        var(--inv) calc(69% + var(--gr-border)), 
+        transparent calc(69% + calc(1px + var(--gr-border)))
+    )/*, repeating-linear-gradient(
+        45deg,
+        var(--main) 0, var(--main) var(--gr-size), 
+        transparent var(--gr-size), transparent calc(var(--gr-size) * 2)
+    ), repeating-linear-gradient(
+        135deg,
+        var(--main) 0, var(--main) var(--gr-size), 
+        var(--inv) var(--gr-size), var(--inv) calc(var(--gr-size) * 2)
+    );*/
+    
+    
+}
+
+.-background-main {
+    position: absolute;
+    top: var(--padding-on-main);
+    left: var(--padding-on-main);
+    width: calc(100% - (2 * var(--padding-on-main)));
+    height: calc(100% - (2 * var(--padding-on-main)));
+    background-image: url('./assets/chessphoto.jpg');
+    filter: grayscale(1) contrast(1.5);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.-theme-select-wrapper {
+    position: absolute;
+    left: calc(var(--padding-on-main) + 2px);
+    bottom: var(--padding-on-main);
+    display: flex;
+    box-sizing: content-box;
+    transform-origin: bottom left;
+    transform: rotate(-90deg);
+    z-index: 1000;
+}
+.-theme-select {
+    font-family: var(--font-regular);
+    color: var(--inv);
+    font-size: 1rem;
+    font-weight: 300;
+    display: flex;
+    gap: 1.5rem;
+    box-sizing: border-box !important;
+    padding: 0rem 0.5rem 0rem 0.4rem;
+    background: var(--main);
+    border-top: 2px solid var(--inv);
+    border-right: 0;
+    border-left: 2px solid var(--inv);
+}
+
+.-theme-select-notch {
+    --align-offset: 46.5%;
+    min-height: 2rem;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(45deg, var(--main) var(--align-offset), var(--inv) calc(var(--align-offset) + 1px), var(--inv) calc(var(--align-offset) + 2px), transparent calc(var(--align-offset) + 3px));
+}
+
+
+.-ts-square {
+    box-sizing: border-box;
+    height: 0.8rem;
+    aspect-ratio: 1 / 1;
+    margin-right: 0.5rem;
+    border: 2px solid var(--inv);
+}
+
+.-ts-square.enabled {
+    border: 0;
+    background: var(--inv);
+}

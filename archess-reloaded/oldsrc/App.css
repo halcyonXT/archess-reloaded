@@ -1,0 +1,37 @@
+.-main {
+    --si-margin: 22rem;
+    width: 100%;
+    height: 100%;
+    background: var(--main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.-main.-close-main > .-si-top {
+    animation: moveTop 1s ease-in 0s 1 normal forwards;
+}
+
+.-main.-close-main > .-si-bottom {
+    animation: moveBottom 1s ease-in 0s 1 normal forwards;
+}
+
+
+@keyframes moveTop {
+    from {
+        top: 0,
+    }
+    to {
+        top: -51%
+    }
+}
+
+@keyframes moveBottom {
+    from {
+        bottom: 0,
+    }
+    to {
+        bottom: -51%;
+    }
+}
