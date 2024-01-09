@@ -10,6 +10,7 @@ import BotSelection from './LeftPanelPanels/BotSelection'
 
 const ANIMATION_STAGGER = 50; // ! in miliseconds
 
+let TIMEOUT = null;
 export default function LeftPanel() {
     const {theme} = React.useContext(ThemeContext)
     const buttonWrapperRef = React.useRef(null);
@@ -21,6 +22,8 @@ export default function LeftPanel() {
     const [activePanel, setActivePanel] = React.useState("main-menu");
 
     const changeActivePanel = (targetPanel) => {
+        if (TIMEOUT) return;
+        
         const PANEL_LIST = ["main-menu", "bot-selection", "offline-match"];
         let isBackButton = false;
 
@@ -55,13 +58,15 @@ export default function LeftPanel() {
             }
         }
         
-        setTimeout(() => {
+        TIMEOUT = setTimeout(() => {
             if (!lastPanelRef.current.includes(targetPanel)) {
                 if (!isBackButton) {
                     setLastPanel(prev => [...prev, activePanel]);
                 }
             }
             setActivePanel(targetPanel);
+            clearTimeout(TIMEOUT);
+            TIMEOUT = null;
         }, 200 + (buttonWrapperRef.current.children.length * ANIMATION_STAGGER))
     }
     
