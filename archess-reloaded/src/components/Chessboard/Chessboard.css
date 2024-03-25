@@ -1,0 +1,77 @@
+.-chessboard-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    height: 100%;
+}
+
+@keyframes cb_appear {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.-chessboard {
+    animation: cb_appear 0.45s ease-out 0s 1 normal forwards;
+    height: 100%;
+    aspect-ratio: 1 / 1 !important;
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: content-box;
+    outline: 4px solid var(--inv);
+    border: 4px solid var(--main);
+}
+
+.-chessboard-cell {
+    height: calc(100% / 8);
+    width: calc(100% / 8);
+    display: grid;
+    place-items: center;
+    position: relative;
+}
+
+.-chessboard-cell.odd:nth-of-type(odd) {
+    background: #efefef;
+}
+.-chessboard-cell.odd:nth-of-type(even) {
+    background: #c2c0c1;
+}
+.-chessboard-cell.even:nth-of-type(even) {
+    background: #efefef;
+}
+.-chessboard-cell.even:nth-of-type(odd) {
+    background: #c2c0c1;
+}
+
+
+.-chessboard-cell.from {
+    background: #c5daeb !important;
+}
+.-chessboard-cell.to {
+    background: #c1e9ee !important;
+}
+.-chessboard-cell.selected {
+    background: #e0c1ee !important;
+}
+
+.-chessboard-cell > svg {
+    position: relative;
+    height: 90% !important;
+    aspect-ratio: 1 / 1;
+}
+
+.-chessboard-cell > svg > g {
+    height: 100% !important;
+    aspect-ratio: 1 / 1;
+}
+
+.-chessboard-cell > svg > path {
+    height: 100% !important;
+    aspect-ratio: 1 / 1;
+}

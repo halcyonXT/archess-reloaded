@@ -5,6 +5,8 @@ import __R_EASY from '../../assets/robot-easy.webp'
 import __R_MEDIUM from '../../assets/robot-medium.webp'
 import __R_HARD from '../../assets/robot-hard.webp'
 import __R_ADVANCED from '../../assets/robot-advanced.webp'
+import __R_EXPERT from '../../assets/robot-expert.webp'
+
 import { ThemeContext } from '../../context/ThemeContext'
 import { CustomRouter, Route } from '../CustomRouter'
 
@@ -14,6 +16,24 @@ const BOT_IMAGE_STYLES = {
     bottom: '10%', 
     height: '80%'
 };
+
+const BOT = {
+    be: "L0",
+    ea: "L2",
+    me: "L3",
+    ha: 2,
+    ad: 6,
+    ex: 10
+}
+
+const BOT_NAME = {
+    be: "IRIS",
+    ea: "ELLA",
+    me: "PROTO",
+    ha: "TWOBIT",
+    ad: "KRONOS",
+    ex: "LT-79"
+}
 
 export default function OfflineMatch(props) {
     const {background} = React.useContext(ThemeContext);
@@ -33,6 +53,20 @@ export default function OfflineMatch(props) {
         }
     }
 
+    React.useEffect(() => {
+        // preload images
+        function preloadImage(url) {
+            var img = new Image();
+            img.src = url;
+        }
+
+        let preloaders = [__R_BEGINNER, __R_EASY, __R_MEDIUM, __R_HARD, __R_ADVANCED, __R_EXPERT];
+
+        for (let pl of preloaders) {
+            preloadImage(pl);
+        }
+    }, [])
+
     const backButtonHandler = () => {
         triggerBgStyles(false, "easy");
         props.changeActivePanel(props.lastPanel[props.lastPanel.length - 1])
@@ -42,6 +76,7 @@ export default function OfflineMatch(props) {
         <>
             <div className='-main-left-button-style-wrapper'>
                 <button className="-main-left-button bold" 
+                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.be, diffName: "beginner", botName: BOT_NAME.be}})}
                     onMouseEnter={() => triggerBgStyles(true, "beginner")}
                     onMouseLeave={() => triggerBgStyles(false, "beginner")}>
                     <Svg icon="g_beginner" />
@@ -51,6 +86,7 @@ export default function OfflineMatch(props) {
             </div>
             <div className='-main-left-button-style-wrapper'>
                 <button className="-main-left-button bold" 
+                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ea, diffName: "easy", botName: BOT_NAME.ea}})}
                     onMouseEnter={() => triggerBgStyles(true, "easy")}
                     onMouseLeave={() => triggerBgStyles(false, "easy")}>
                     <Svg icon="g_easy" />
@@ -60,6 +96,7 @@ export default function OfflineMatch(props) {
             </div>
             <div className='-main-left-button-style-wrapper'>
                 <button className="-main-left-button bold" 
+                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.me, diffName: "medium", botName: BOT_NAME.me}})}
                     onMouseEnter={() => triggerBgStyles(true, "medium")}
                     onMouseLeave={() => triggerBgStyles(false, "medium")}>
                     <Svg icon="g_medium" />
@@ -69,6 +106,7 @@ export default function OfflineMatch(props) {
             </div>
             <div className='-main-left-button-style-wrapper'>
                 <button className="-main-left-button bold" 
+                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ha, diffName: "hard", botName: BOT_NAME.ha}})}
                     onMouseEnter={() => triggerBgStyles(true, "hard")}
                     onMouseLeave={() => triggerBgStyles(false, "hard")}>
                     <Svg icon="g_hard" />
@@ -78,10 +116,21 @@ export default function OfflineMatch(props) {
             </div>
             <div className='-main-left-button-style-wrapper'>
                 <button className="-main-left-button bold" 
+                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ad, diffName: "advanced", botName: BOT_NAME.ad}})}
                     onMouseEnter={() => triggerBgStyles(true, "advanced")}
                     onMouseLeave={() => triggerBgStyles(false, "advanced")}>
                     <Svg icon="g_advanced" />
                     ADVANCED
+                </button>
+                <div className='-main-left-button-notch'/>
+            </div>
+            <div className='-main-left-button-style-wrapper'>
+                <button className="-main-left-button bold" 
+                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ex, diffName: "expert", botName: BOT_NAME.ex}})}
+                    onMouseEnter={() => triggerBgStyles(true, "expert")}
+                    onMouseLeave={() => triggerBgStyles(false, "expert")}>
+                    <Svg icon="g_expert" />
+                    EXPERT
                 </button>
                 <div className='-main-left-button-notch'/>
             </div>
@@ -92,7 +141,12 @@ export default function OfflineMatch(props) {
                         src={__R_BEGINNER}
                         style={BOT_IMAGE_STYLES}
                     />
-                    <div className='-robot-name'>NOVAK</div>
+                    <div className='-robot-name'>IRIS</div>
+                    <div className="-robot-details">
+                        <div className="-robot-tale">
+                        IRIS.  A repurposed filing assistant, its circuits abuzz with newfound curiosity.  Pawns and rooks replace folders and reports, a delightful confusion in its digital eyes.  Moves are tentative, born from a playful spirit more than strategic intent.  IRIS may not be a master strategist, but its enthusiasm for the game is as contagious as a well-placed knight.
+                        </div>
+                    </div>
                 </Route>
                 <Route route="easy">
                     <img
@@ -101,6 +155,11 @@ export default function OfflineMatch(props) {
                         style={BOT_IMAGE_STYLES}
                     />
                     <div className='-robot-name'>ELLA</div>
+                    <div className="-robot-details">
+                        <div className="-robot-tale">
+                        ELLA.  Friendly face of the game, a gentle breeze on the chessboard.  She makes mistakes, sure, but offers a safe space to learn and experiment.  A patient teacher, always ready for a rematch, Ella welcomes you with a digital smile, ready to hone your skills.
+                        </div>
+                    </div>
                 </Route>
                 <Route route="medium">
                     <img
@@ -109,6 +168,11 @@ export default function OfflineMatch(props) {
                         style={BOT_IMAGE_STYLES}
                     />
                     <div className='-robot-name'>PROTO</div>
+                    <div className="-robot-details">
+                        <div className="-robot-tale">
+                        PROTO. A steady learner, gears turning with practiced precision.  No stranger to victory, but no champion either.  It challenges with a calculated calm, a tutor ready to test your skills and learn from yours in return.  A stepping stone on your path to mastery.
+                        </div>
+                    </div>
                 </Route>
                 <Route route="hard">
                     <img
@@ -117,6 +181,11 @@ export default function OfflineMatch(props) {
                         style={BOT_IMAGE_STYLES}
                     />
                     <div className='-robot-name'>TWOBIT</div>
+                    <div className="-robot-details">
+                        <div className="-robot-tale">
+                        TWOBIT.  Bootstrapped genius, code cobbled from open-source brilliance.  A scrappy underdog, learning with every byte.  It may stumble, but its open architecture fuels relentless improvement.  A tireless challenger, ready to surprise with its unconventional brilliance.
+                        </div>
+                    </div>
                 </Route>
                 <Route route="advanced">
                     <img
@@ -124,7 +193,25 @@ export default function OfflineMatch(props) {
                         src={__R_ADVANCED}
                         style={BOT_IMAGE_STYLES}
                     />
-                    <div className='-robot-name'>APOLLON</div>
+                    <div className='-robot-name'>KRONOS</div>
+                    <div className="-robot-details">
+                        <div className="-robot-tale">
+                        KRONOS. Titan of steel and silicon, forged in the shadow of greatness.  Lays siege to the board, a relentless strategist.  Cracks form in its perfect record, whispers of a superior.  But time, even for machines, is on its side.
+                        </div>
+                    </div>
+                </Route>
+                <Route route="expert">
+                    <img
+                        key={"234567"}
+                        src={__R_EXPERT}
+                        style={BOT_IMAGE_STYLES}
+                    />
+                    <div className='-robot-name'>LT-79</div>
+                    <div className="-robot-details">
+                        <div className='-robot-tale'>
+                            LT-79.  A monolith of dented chrome, its single arm a testament to a thousand fallen foes.  Myths whisper of a hundred tournaments, a hundred victories.  Its processors, scarred veterans of a billion calculations, churn with icy precision.  A wounded king, but a king nonetheless, ruling the board with an iron grip.
+                        </div>
+                    </div>
                 </Route>
             </CustomRouter>
             <div className='-main-left-button-style-wrapper back-btn'>

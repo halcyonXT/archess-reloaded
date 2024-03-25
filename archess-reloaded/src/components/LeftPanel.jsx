@@ -7,11 +7,12 @@ import MainMenu from './LeftPanelPanels/MainMenu'
 import OfflineMatch from './LeftPanelPanels/OfflineMatch'
 import { CustomRouter, Route } from "./CustomRouter"
 import BotSelection from './LeftPanelPanels/BotSelection'
+import UserInfo from './UserInfo'
 
 const ANIMATION_STAGGER = 50; // ! in miliseconds
 
 let TIMEOUT = null;
-export default function LeftPanel() {
+export default function LeftPanel(props) {
     const {theme} = React.useContext(ThemeContext)
     const buttonWrapperRef = React.useRef(null);
 
@@ -49,12 +50,12 @@ export default function LeftPanel() {
                     fill: 'forwards'
                 })
             } catch (ex) {
-                console.warn(`LeftPanel staggered animation error:
+                /*console.warn(`LeftPanel staggered animation error:
                 iterator: ${i}
                 buttonWrapperRef.children.length: ${buttonWrapperRef.current.children.length}
                 TTL: ${200 + (buttonWrapperRef.current.children.length * ANIMATION_STAGGER)}
                 activeItem: ${buttonWrapperRef.current.children[i]}
-                exception: ${ex}`)
+                exception: ${ex}`)*/
             }
         }
         
@@ -90,10 +91,12 @@ export default function LeftPanel() {
                     <Route route="bot-selection">
                         <BotSelection 
                             changeActivePanel={changeActivePanel}
-                            lastPanel={lastPanelRef.current} />
+                            lastPanel={lastPanelRef.current} 
+                            initiateGame={props.initiateGame}/>
                     </Route>
                 </CustomRouter>
             </div>
+            <UserInfo initiateRadialGradientTransition={props.initiateRadialGradientTransition} setMainPanel={props.setMainPanel}/>
         </div>
     )
 }

@@ -3,10 +3,18 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { ThemeContextProvider } from "./context/ThemeContext.jsx"
+import { GameContextProvider } from './context/GameContext.jsx'
+import { SocketProvider } from './context/SocketContext.jsx'
+import { UserContextProvider } from './context/UserContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-
-    <ThemeContextProvider>
-      <App />
-    </ThemeContextProvider>,
+  <SocketProvider>
+    <UserContextProvider>
+      <GameContextProvider>
+        <ThemeContextProvider>
+          <App />
+        </ThemeContextProvider>
+      </GameContextProvider>
+    </UserContextProvider>
+  </SocketProvider>,
 )
