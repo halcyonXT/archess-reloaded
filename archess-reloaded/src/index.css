@@ -26,15 +26,49 @@
   --r-medium: #FFF100;
   --r-hard: #FC1116;
   --r-advanced: #7C05F5;
-  --r-expert: var(--inv)
+  --r-expert: #FFFFFF
 }
 
+/* HTML: <div class="loader"></div> */
+.loader {
+  aspect-ratio: 1;
+  --c:no-repeat linear-gradient(var(--inv) 0 0);
+  background: var(--c), var(--c), var(--c);
+  animation: 
+    l18-1 1s infinite,
+    l18-2 1s infinite;
+}
+@keyframes l18-1 {
+ 0%,100% {background-size:20% 100%; opacity: 1}
+ 33%,66% {background-size:20% 20%; opacity: .5}
+}
+@keyframes l18-2 {
+ 0%,33%   {background-position: 0    0,50% 50%,100% 100%}
+ 66%,100% {background-position: 100% 0,50% 50%,0    100%}
+}
+
+.-error {
+  background: rgba(255, 0, 0, 0.281);
+  color: red;
+  display: block;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+  padding: .5rem;
+  font-family: var(--font-regular);
+}
 
 * {
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
   -moz-user-select: none;
+}
+
+*::selection {
+  background: var(--inv);
+  color: var(--main);
 }
 
 

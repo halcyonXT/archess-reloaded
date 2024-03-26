@@ -12,7 +12,7 @@ export default function Svg(props) {
     })())
 
     return (
-        <div className='-svg' style={styles}>
+        <div className={`-svg ${props.xc ? props.xc : ""}`} style={styles}>
             {
                 ICONS[props.icon]
             }

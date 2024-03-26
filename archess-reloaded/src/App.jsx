@@ -15,6 +15,10 @@ import __R_ADVANCED from './assets/robot-advanced.webp'
 import __R_EXPERT from './assets/robot-expert.webp'
 import { UserContext } from './context/UserContext'
 import { CustomRouter, Route } from './components/CustomRouter'
+import Registration from './components/Registration/Registration'
+import __AR from './assets/archess-webp.webp'
+import __AR_INV from './assets/archess-inverted-webp.webp'
+
 
 let vantaReference = null;
 
@@ -57,11 +61,12 @@ function App() {
 
     const backgroundRef = React.useRef(null);
     const mainRef = React.useRef(null);
+    const radialGradientRef = React.useRef(null);
 
     
     React.useEffect(() => {
         setTimeout(() => {
-            vantaReference = VANTA.NET({
+            /*vantaReference = VANTA.NET({
                 el: "#root",
                 mouseControls: false,
                 touchControls: false,
@@ -72,8 +77,19 @@ function App() {
                 scaleMobile: 1.00,
                 color: theme === "dark" ? 0xffffff : 0x0,
                 backgroundColor: theme === "dark" ? 0x0 : 0xffffff
-            })
+            })*/
         }, 5)
+
+        function preloadImage(url) {
+            var img = new Image();
+            img.src = url;
+        }
+
+        let preloaders = [__AR, __AR_INV, __R_BEGINNER, __R_EASY, __R_MEDIUM, __R_HARD, __R_ADVANCED, __R_EXPERT];
+
+        for (let pl of preloaders) {
+            preloadImage(pl);
+        }
     }, [])
 
     React.useEffect(() => {
@@ -105,20 +121,19 @@ function App() {
                 // ! To
                 opacity: "0",
                 duration: TRANSITION_DURATION * 0.75,
-                ease: 'power1.inOut',
             }
         );
         gsap.fromTo(
-            mainRef.current,
+            radialGradientRef.current,
             {
                 // ! From
-                background: `radial-gradient(circle at 0px 0px, var(--main) calc(69% - 1px), var(--inv) calc(69%), var(--inv) calc(69% + var(--gr-border)), transparent calc(69% + calc(1px + var(--gr-border))))`,
+                right: '0%'
             },
             {
                 // ! To
-                background: `radial-gradient(circle at 0px 0px, var(--main) calc(101% - 1px), var(--inv) calc(101%), var(--inv) calc(101% + var(--gr-border)), transparent calc(101% + calc(1px + var(--gr-border))))`,
+                right: '-75%',
+                ease: 'power1.out',
                 duration: TRANSITION_DURATION,
-                ease: 'power1.inOut',
             }
         );
     }
@@ -136,20 +151,20 @@ function App() {
                 // ! To
                 opacity: "1",
                 duration: TRANSITION_DURATION * 0.75,
-                ease: 'power1.inOut',
+                ease: 'power1.out',
             }
         );
         gsap.fromTo(
-            mainRef.current,
+            radialGradientRef.current,
             {
                 // ! From
-                background: `radial-gradient(circle at 0px 0px, var(--main) calc(101% - 1px), var(--inv) calc(101%), var(--inv) calc(101% + var(--gr-border)), transparent calc(101% + calc(1px + var(--gr-border))))`,
+                right: '-75%',
             },
             {
                 // ! To
-                background: `radial-gradient(circle at 0px 0px, var(--main) calc(69% - 1px), var(--inv) calc(69%), var(--inv) calc(69% + var(--gr-border)), transparent calc(69% + calc(1px + var(--gr-border))))`,
+                right: '0%',
                 duration: TRANSITION_DURATION,
-                ease: 'power1.inOut',
+                ease: 'power1.out',
             }
         );
 
@@ -230,16 +245,20 @@ function App() {
     }
 
     const switchMainPanel = (panelName) => {
-        initiateRadialGradientTransition();
+        if (panelName) {
+            initiateRadialGradientTransition();
+        } else {
+            initiateReverseRadialGradientTransition();
+        }
 
         setTimeout(() => {
             setMainPanel(panelName);
         }, currentRadialTransitionDuration * 1000);
         
-        setTimeout(() => {
+        /*setTimeout(() => {
             setMainPanel(null);
             initiateReverseRadialGradientTransition();
-        }, currentRadialTransitionDuration * 3 * 1000)
+        }, currentRadialTransitionDuration * 3 * 1000)*/
     }
 
     return (
@@ -258,10 +277,11 @@ function App() {
                 <div className="-theme-select-notch"></div>
             </div>
             <div className='-background-main' ref={backgroundRef} style={background.styles}></div>
-            <div className='-main' ref={mainRef}>
+            <div className='-rmain' ref={mainRef}>
+                <div className="-main" ref={radialGradientRef}></div>
                 <CustomRouter currentRoute={mainPanel}>
-                    <Route route="sign-up">
-
+                    <Route route="registration">
+                        <Registration switchMainPanel={switchMainPanel}/>
                     </Route>
                     <Route route="log-in">
 
@@ -283,9 +303,11 @@ function App() {
                     &&
                     <>
                         <div className="-ppanel -left-player">
-                            <div style={{backgroundImage: pBgs.left.col}} className="-lp-bg-bg"></div>
                             <div className="-lp-details-wrap">
-                                <div className='-lp-bg'></div>
+                                <div style={{backgroundImage: pBgs.left.col}} className="-lp-bg-bg">
+                                    <div className='-lp-bg'>
+                                    </div>
+                                </div>
                                 <div className="-lp-bg-pfp">
                                     <img
                                         src={
@@ -301,8 +323,9 @@ function App() {
                         </div>
                         <Chessboard/>
                         <div className="-ppanel -right-player">
-                            <div style={{backgroundImage: pBgs.right.col}} className="-rp-bg-bg"></div>
-                            <div className='-rp-bg'></div>
+                            <div style={{backgroundImage: pBgs.right.col}} className="-rp-bg-bg">
+                                <div className='-rp-bg'></div>
+                            </div>
                             <div className="-rp-bg-pfp">
                                 {
                                     game.value.type === 'bot'

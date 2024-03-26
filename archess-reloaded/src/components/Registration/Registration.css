@@ -1,0 +1,136 @@
+.-registration-wrapper {
+    --reg-padding: 5rem;
+    --width: 33%;
+    position: relative;
+    width: var(--width);
+    left: calc((100% - var(--width)) / 2 - var(--reg-padding) / 2);
+    height: calc(100% - var(--padding) * 1);
+    box-sizing: content-box;
+    animation: scaleDownReg .5s ease-out 0s 1 normal forwards;
+    overflow: hidden;
+    padding: 0 var(--reg-padding) 0 var(--reg-padding);
+}
+
+@keyframes scaleDownReg {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1)
+    }
+}
+
+.-registration-logo {
+    font-family: var(--font-display);
+    color: var(--inv);
+    text-align: left;
+    margin: 0; padding: 0;
+    
+    font-size: 2rem;
+}
+
+.-registration-slider-wrapper {
+    width: 100%;
+    height: max-content;
+    box-sizing: content-box;
+    padding-bottom: 3px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-bottom:1.5rem;
+}
+
+.-registration-header {
+    font-family: var(--font-regular);
+    color: var(--inv);
+    text-align: center;
+    margin: 0; padding: 0;
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-bottom: .25rem;
+    width: 50%;
+    transition-duration: 75ms;
+    cursor: pointer;
+}
+
+.-registration-header.inactive {
+    opacity: .3;
+}
+
+.-registration-slider-under {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: var(--inv);
+    opacity: .3;
+    height: 3px;
+}
+
+.-registration-slider-over {
+    position: absolute;
+    bottom: 0;
+    width: 50%;
+    background: var(--inv);
+    opacity: 1;
+    height: 3px;
+}
+
+.-registration-input {
+    --inp-totalHeight: calc(1.5rem + 2.9rem + 0.5rem);
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--inv);
+    font-family: var(--font-regular);
+    color: var(--inv);
+    box-sizing: border-box;
+    padding: .25rem .5rem .25rem .5rem;
+    font-size: 1.5rem;
+    height: 2.9rem;
+    outline: 0;
+    background: var(--main);
+}
+
+.-registration-input::placeholder {
+    font-family: var(--font-regular);
+    color: var(--inv);
+    font-size: 1.5rem;
+    opacity: .5;
+}
+
+.-ghost-input {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.-inputs-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.-registration-back-button {
+    opacity: 0.85;
+    font-family: var(--font-regular);
+    font-size: 1.2rem;
+    align-self: center;
+    justify-self: flex-end;
+    color: var(--inv);
+    transition-duration: 100ms;
+}
+
+.-registration-back-button:hover {
+    cursor: pointer;
+    opacity: 1;
+}
+
+.-registration-navbar {
+    display: flex;
+    margin-bottom: 2rem;
+    align-items: center;
+    justify-content: space-between;
+}
+

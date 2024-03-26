@@ -1,29 +1,42 @@
 import React from 'react'
 import Svg from '../Svg'
 import __R_BEGINNER from '../../assets/robot-beginner.webp'
+import __SVG_BEGINNER from '../../assets/r_beginner.svg'
 import __R_EASY from '../../assets/robot-easy.webp'
+import __SVG_EASY from '../../assets/r_easy.svg'
 import __R_MEDIUM from '../../assets/robot-medium.webp'
+import __SVG_MEDIUM from '../../assets/r_medium.svg'
 import __R_HARD from '../../assets/robot-hard.webp'
+import __SVG_HARD from '../../assets/r_hard.svg'
 import __R_ADVANCED from '../../assets/robot-advanced.webp'
+import __SVG_ADVANCED from '../../assets/r_advanced.svg'
 import __R_EXPERT from '../../assets/robot-expert.webp'
+import __SVG_EXPERT from '../../assets/r_expert.svg'
 
 import { ThemeContext } from '../../context/ThemeContext'
 import { CustomRouter, Route } from '../CustomRouter'
 
 const BOT_IMAGE_STYLES = {
-    position: 'absolute', 
-    right: '13.5%', 
-    bottom: '10%', 
-    height: '80%'
+    position: 'absolute',
+    right: '29.5%',
+    bottom: '10%',
+    height: '85%',
+    zIndex: '2',
 };
+
+const SVG_BORDER = (diff) => {
+    return ({
+        border: `6px solid var(--r-${diff})`
+    })
+}
 
 const BOT = {
     be: "L0",
     ea: "L2",
     me: "L3",
-    ha: 2,
-    ad: 6,
-    ex: 10
+    ha: 1,
+    ad: 5,
+    ex: 9
 }
 
 const BOT_NAME = {
@@ -35,11 +48,39 @@ const BOT_NAME = {
     ex: "LT-79"
 }
 
+const BOT_INFO = {
+    be: {
+        elo: 400
+    },
+    ea: {
+        elo: 800
+    },
+    me: {
+        elo: 1200
+    },
+    ha: {
+        elo: 1600
+    },
+    ad: {
+        elo: 1900
+    },
+    ex: {
+        elo: 2200
+    }
+}
+
+let retainBgStyle = false;
 export default function OfflineMatch(props) {
-    const {background} = React.useContext(ThemeContext);
+    const { background } = React.useContext(ThemeContext);
     const [hovered, setHovered] = React.useState(null);
 
+    // * Ready is true when image preloading is finished
+    const [ready, setReady] = React.useState(false);
+
     const triggerBgStyles = (hasEntered, diff) => {
+        if (retainBgStyle) {
+            return;
+        }
         if (hasEntered) {
             background.setStyles({
                 background: `var(--r-${diff})`,
@@ -60,11 +101,14 @@ export default function OfflineMatch(props) {
             img.src = url;
         }
 
-        let preloaders = [__R_BEGINNER, __R_EASY, __R_MEDIUM, __R_HARD, __R_ADVANCED, __R_EXPERT];
+        let preloaders = [__SVG_EASY, __SVG_MEDIUM, __SVG_HARD, __SVG_ADVANCED, __SVG_EXPERT];
 
         for (let pl of preloaders) {
             preloadImage(pl);
         }
+
+        // * Ready gives permission to bot buttons to load - only once image preloading is done
+        setReady(true);
     }, [])
 
     const backButtonHandler = () => {
@@ -72,153 +116,227 @@ export default function OfflineMatch(props) {
         props.changeActivePanel(props.lastPanel[props.lastPanel.length - 1])
     }
 
+    const initiateGame = (opts) => {
+        retainBgStyle = true;
+        props.initiateGame(opts);
+    }
+
     return (
         <>
-            <div className='-main-left-button-style-wrapper'>
-                <button className="-main-left-button bold" 
-                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.be, diffName: "beginner", botName: BOT_NAME.be}})}
-                    onMouseEnter={() => triggerBgStyles(true, "beginner")}
-                    onMouseLeave={() => triggerBgStyles(false, "beginner")}>
-                    <Svg icon="g_beginner" />
-                    BEGINNER
-                </button>
-                <div className='-main-left-button-notch'/>
-            </div>
-            <div className='-main-left-button-style-wrapper'>
-                <button className="-main-left-button bold" 
-                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ea, diffName: "easy", botName: BOT_NAME.ea}})}
-                    onMouseEnter={() => triggerBgStyles(true, "easy")}
-                    onMouseLeave={() => triggerBgStyles(false, "easy")}>
-                    <Svg icon="g_easy" />
-                    EASY
-                </button>
-                <div className='-main-left-button-notch'/>
-            </div>
-            <div className='-main-left-button-style-wrapper'>
-                <button className="-main-left-button bold" 
-                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.me, diffName: "medium", botName: BOT_NAME.me}})}
-                    onMouseEnter={() => triggerBgStyles(true, "medium")}
-                    onMouseLeave={() => triggerBgStyles(false, "medium")}>
-                    <Svg icon="g_medium" />
-                    MEDIUM
-                </button>
-                <div className='-main-left-button-notch'/>
-            </div>
-            <div className='-main-left-button-style-wrapper'>
-                <button className="-main-left-button bold" 
-                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ha, diffName: "hard", botName: BOT_NAME.ha}})}
-                    onMouseEnter={() => triggerBgStyles(true, "hard")}
-                    onMouseLeave={() => triggerBgStyles(false, "hard")}>
-                    <Svg icon="g_hard" />
-                    HARD
-                </button>
-                <div className='-main-left-button-notch'/>
-            </div>
-            <div className='-main-left-button-style-wrapper'>
-                <button className="-main-left-button bold" 
-                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ad, diffName: "advanced", botName: BOT_NAME.ad}})}
-                    onMouseEnter={() => triggerBgStyles(true, "advanced")}
-                    onMouseLeave={() => triggerBgStyles(false, "advanced")}>
-                    <Svg icon="g_advanced" />
-                    ADVANCED
-                </button>
-                <div className='-main-left-button-notch'/>
-            </div>
-            <div className='-main-left-button-style-wrapper'>
-                <button className="-main-left-button bold" 
-                    onClick={() => props.initiateGame({type: 'bot', options: {difficulty: BOT.ex, diffName: "expert", botName: BOT_NAME.ex}})}
-                    onMouseEnter={() => triggerBgStyles(true, "expert")}
-                    onMouseLeave={() => triggerBgStyles(false, "expert")}>
-                    <Svg icon="g_expert" />
-                    EXPERT
-                </button>
-                <div className='-main-left-button-notch'/>
-            </div>
-            <CustomRouter currentRoute={hovered}>
-                <Route route="beginner">
-                    <img
-                        key={"298375"}
-                        src={__R_BEGINNER}
-                        style={BOT_IMAGE_STYLES}
-                    />
-                    <div className='-robot-name'>IRIS</div>
-                    <div className="-robot-details">
-                        <div className="-robot-tale">
-                        IRIS.  A repurposed filing assistant, its circuits abuzz with newfound curiosity.  Pawns and rooks replace folders and reports, a delightful confusion in its digital eyes.  Moves are tentative, born from a playful spirit more than strategic intent.  IRIS may not be a master strategist, but its enthusiasm for the game is as contagious as a well-placed knight.
-                        </div>
+            {
+                !ready
+                ?
+                <div className="loader" style={{width: '2rem', height: '2rem', marginLeft: '2%'}}></div> 
+                :
+                <>
+                    <div className='-main-left-button-style-wrapper'>
+                        <button className="-main-left-button bold"
+                            onClick={() => initiateGame({ type: 'bot', options: { difficulty: BOT.be, diffName: "beginner", botName: BOT_NAME.be } })}
+                            onMouseEnter={() => triggerBgStyles(true, "beginner")}
+                            onMouseLeave={() => triggerBgStyles(false, "beginner")}>
+                            <Svg icon="g_beginner" />
+                            BEGINNER
+                        </button>
+                        <div className='-main-left-button-notch' />
                     </div>
-                </Route>
-                <Route route="easy">
-                    <img
-                        key={"7534263"}
-                        src={__R_EASY}
-                        style={BOT_IMAGE_STYLES}
-                    />
-                    <div className='-robot-name'>ELLA</div>
-                    <div className="-robot-details">
-                        <div className="-robot-tale">
-                        ELLA.  Friendly face of the game, a gentle breeze on the chessboard.  She makes mistakes, sure, but offers a safe space to learn and experiment.  A patient teacher, always ready for a rematch, Ella welcomes you with a digital smile, ready to hone your skills.
-                        </div>
+                    <div className='-main-left-button-style-wrapper'>
+                        <button className="-main-left-button bold"
+                            onClick={() => initiateGame({ type: 'bot', options: { difficulty: BOT.ea, diffName: "easy", botName: BOT_NAME.ea } })}
+                            onMouseEnter={() => triggerBgStyles(true, "easy")}
+                            onMouseLeave={() => triggerBgStyles(false, "easy")}>
+                            <Svg icon="g_easy" />
+                            EASY
+                        </button>
+                        <div className='-main-left-button-notch' />
                     </div>
-                </Route>
-                <Route route="medium">
-                    <img
-                        key={"1345723"}
-                        src={__R_MEDIUM}
-                        style={BOT_IMAGE_STYLES}
-                    />
-                    <div className='-robot-name'>PROTO</div>
-                    <div className="-robot-details">
-                        <div className="-robot-tale">
-                        PROTO. A steady learner, gears turning with practiced precision.  No stranger to victory, but no champion either.  It challenges with a calculated calm, a tutor ready to test your skills and learn from yours in return.  A stepping stone on your path to mastery.
-                        </div>
+                    <div className='-main-left-button-style-wrapper'>
+                        <button className="-main-left-button bold"
+                            onClick={() => initiateGame({ type: 'bot', options: { difficulty: BOT.me, diffName: "medium", botName: BOT_NAME.me } })}
+                            onMouseEnter={() => triggerBgStyles(true, "medium")}
+                            onMouseLeave={() => triggerBgStyles(false, "medium")}>
+                            <Svg icon="g_medium" />
+                            MEDIUM
+                        </button>
+                        <div className='-main-left-button-notch' />
                     </div>
-                </Route>
-                <Route route="hard">
-                    <img
-                        key={"346134"}
-                        src={__R_HARD}
-                        style={BOT_IMAGE_STYLES}
-                    />
-                    <div className='-robot-name'>TWOBIT</div>
-                    <div className="-robot-details">
-                        <div className="-robot-tale">
-                        TWOBIT.  Bootstrapped genius, code cobbled from open-source brilliance.  A scrappy underdog, learning with every byte.  It may stumble, but its open architecture fuels relentless improvement.  A tireless challenger, ready to surprise with its unconventional brilliance.
-                        </div>
+                    <div className='-main-left-button-style-wrapper'>
+                        <button className="-main-left-button bold"
+                            onClick={() => initiateGame({ type: 'bot', options: { difficulty: BOT.ha, diffName: "hard", botName: BOT_NAME.ha } })}
+                            onMouseEnter={() => triggerBgStyles(true, "hard")}
+                            onMouseLeave={() => triggerBgStyles(false, "hard")}>
+                            <Svg icon="g_hard" />
+                            HARD
+                        </button>
+                        <div className='-main-left-button-notch' />
                     </div>
-                </Route>
-                <Route route="advanced">
-                    <img
-                        key={"923456"}
-                        src={__R_ADVANCED}
-                        style={BOT_IMAGE_STYLES}
-                    />
-                    <div className='-robot-name'>KRONOS</div>
-                    <div className="-robot-details">
-                        <div className="-robot-tale">
-                        KRONOS. Titan of steel and silicon, forged in the shadow of greatness.  Lays siege to the board, a relentless strategist.  Cracks form in its perfect record, whispers of a superior.  But time, even for machines, is on its side.
-                        </div>
+                    <div className='-main-left-button-style-wrapper'>
+                        <button className="-main-left-button bold"
+                            onClick={() => initiateGame({ type: 'bot', options: { difficulty: BOT.ad, diffName: "advanced", botName: BOT_NAME.ad } })}
+                            onMouseEnter={() => triggerBgStyles(true, "advanced")}
+                            onMouseLeave={() => triggerBgStyles(false, "advanced")}>
+                            <Svg icon="g_advanced" />
+                            ADVANCED
+                        </button>
+                        <div className='-main-left-button-notch' />
                     </div>
-                </Route>
-                <Route route="expert">
-                    <img
-                        key={"234567"}
-                        src={__R_EXPERT}
-                        style={BOT_IMAGE_STYLES}
-                    />
-                    <div className='-robot-name'>LT-79</div>
-                    <div className="-robot-details">
-                        <div className='-robot-tale'>
-                            LT-79.  A monolith of dented chrome, its single arm a testament to a thousand fallen foes.  Myths whisper of a hundred tournaments, a hundred victories.  Its processors, scarred veterans of a billion calculations, churn with icy precision.  A wounded king, but a king nonetheless, ruling the board with an iron grip.
-                        </div>
+                    <div className='-main-left-button-style-wrapper'>
+                        <button className="-main-left-button bold"
+                            onClick={() => initiateGame({ type: 'bot', options: { difficulty: BOT.ex, diffName: "expert", botName: BOT_NAME.ex } })}
+                            onMouseEnter={() => triggerBgStyles(true, "expert")}
+                            onMouseLeave={() => triggerBgStyles(false, "expert")}>
+                            <Svg icon="g_expert" />
+                            EXPERT
+                        </button>
+                        <div className='-main-left-button-notch' />
                     </div>
-                </Route>
-            </CustomRouter>
+                    <CustomRouter currentRoute={hovered}>
+                        <Route route="beginner">
+                            <img
+                                key={"298375"}
+                                src={__R_BEGINNER}
+                                style={BOT_IMAGE_STYLES}
+                            />
+                            <img
+                                key={"84332"}
+                                src={__SVG_BEGINNER}
+                                className='-robot-svg'
+                                style={{ ...SVG_BORDER('beginner') }}
+                            />
+                            <div className='-robot-name'>IRIS</div>
+                            <div className="-robot-details">
+                                <div className="-robot-tale">
+                                    IRIS.  A repurposed filing assistant, its circuits abuzz with newfound curiosity.  Pawns and rooks replace folders and reports, a delightful confusion in its digital eyes.  Moves are tentative, born from a playful spirit more than strategic intent.  IRIS may not be a master strategist, but its enthusiasm for the game is as contagious as a well-placed knight.
+                                </div>
+                                <div className="-robot-bottom">
+                                    <b>ELO:</b> {BOT_INFO.be.elo}<br />
+                                    <b>Progress:</b> ★★★
+                                </div>
+                            </div>
+                        </Route>
+                        <Route route="easy">
+                            <img
+                                key={"7534263"}
+                                src={__R_EASY}
+                                style={BOT_IMAGE_STYLES}
+                            />
+                            <img
+                                key={"26345299"}
+                                src={__SVG_EASY}
+                                className='-robot-svg'
+                                style={{ ...SVG_BORDER('easy') }}
+                            />
+                            <div className='-robot-name'>ELLA</div>
+                            <div className="-robot-details">
+                                <div className="-robot-tale">
+                                    ELLA.  Friendly face of the game, a gentle breeze on the chessboard.  She makes mistakes, sure, but offers a safe space to learn and experiment.  A patient teacher, always ready for a rematch, Ella welcomes you with a digital smile, ready to hone your skills.
+                                </div>
+                                <div className="-robot-bottom">
+                                    <b>ELO:</b> {BOT_INFO.ea.elo}<br />
+                                    <b>Progress:</b> ★★★
+                                </div>
+                            </div>
+                        </Route>
+                        <Route route="medium">
+                            <img
+                                key={"1345723"}
+                                src={__R_MEDIUM}
+                                style={BOT_IMAGE_STYLES}
+                            />
+                            <img
+                                key={"2345621"}
+                                src={__SVG_MEDIUM}
+                                className='-robot-svg'
+                                style={{ ...SVG_BORDER('medium') }}
+                            />
+                            <div className='-robot-name'>PROTO</div>
+                            <div className="-robot-details">
+                                <div className="-robot-tale">
+                                    PROTO. A steady learner, gears turning with practiced precision.  No stranger to victory, but no champion either.  It challenges with a calculated calm, a tutor ready to test your skills and learn from yours in return.  A stepping stone on your path to mastery.
+                                </div>
+                                <div className="-robot-bottom">
+                                    <b>ELO:</b> {BOT_INFO.me.elo}<br />
+                                    <b>Progress:</b> ★★★
+                                </div>
+                            </div>
+                        </Route>
+                        <Route route="hard">
+                            <img
+                                key={"346134"}
+                                src={__R_HARD}
+                                style={BOT_IMAGE_STYLES}
+                            />
+                            <img
+                                key={"745367435"}
+                                src={__SVG_HARD}
+                                className='-robot-svg'
+                                style={{ ...SVG_BORDER('hard') }}
+                            />
+                            <div className='-robot-name'>TWOBIT</div>
+                            <div className="-robot-details">
+                                <div className="-robot-tale">
+                                    TWOBIT.  Bootstrapped genius, code cobbled from open-source brilliance.  A scrappy underdog, learning with every byte.  It may stumble, but its open architecture fuels relentless improvement.  A tireless challenger, ready to surprise with its unconventional brilliance.
+                                </div>
+                                <div className="-robot-bottom">
+                                    <b>ELO:</b> {BOT_INFO.ha.elo}<br />
+                                    <b>Progress:</b> ★★★
+                                </div>
+                            </div>
+                        </Route>
+                        <Route route="advanced">
+                            <img
+                                key={"923456"}
+                                src={__R_ADVANCED}
+                                style={BOT_IMAGE_STYLES}
+                            />
+                            <img
+                                key={"623451"}
+                                src={__SVG_ADVANCED}
+                                className='-robot-svg'
+                                style={{ ...SVG_BORDER('advanced') }}
+                            />
+
+                            <div className='-robot-name'>KRONOS</div>
+                            <div className="-robot-details">
+                                <div className="-robot-tale">
+                                    KRONOS. Titan of steel and silicon, forged in the shadow of greatness.  Lays siege to the board, a relentless strategist.  Cracks form in its perfect record, whispers of a superior.  But time, even for machines, is on its side.
+                                </div>
+                                <div className="-robot-bottom">
+                                    <b>ELO:</b> {BOT_INFO.ad.elo}<br />
+                                    <b>Progress:</b> ★★★
+                                </div>
+                            </div>
+                        </Route>
+                        <Route route="expert">
+                            <img
+                                key={"234567"}
+                                src={__R_EXPERT}
+                                style={BOT_IMAGE_STYLES}
+                            />
+                            <img
+                                key={"6254577"}
+                                src={__SVG_EXPERT}
+                                className='-robot-svg'
+                                style={{ ...SVG_BORDER('expert') }}
+                            />
+                            <div className='-robot-name'>LT-79</div>
+                            <div className="-robot-details">
+                                <div className='-robot-tale'>
+                                    LT-79.  A monolith of dented chrome, its single arm a testament to a thousand fallen foes.  Myths whisper of a hundred tournaments, a hundred victories.  Its processors, scarred veterans of a billion calculations, churn with icy precision.  A wounded king, but a king nonetheless, ruling the board with an iron grip.
+                                </div>
+                                <div className="-robot-bottom">
+                                    <b>ELO:</b> {BOT_INFO.ex.elo}<br />
+                                    <b>Progress:</b> ★★★
+                                </div>
+                            </div>
+                        </Route>
+                    </CustomRouter>
+                </>
+            }
             <div className='-main-left-button-style-wrapper back-btn'>
                 <button className="-main-left-button" onClick={backButtonHandler}>
                     BACK
                 </button>
-                <div className='-main-left-button-notch'/>
+                <div className='-main-left-button-notch' />
             </div>
         </>
     )

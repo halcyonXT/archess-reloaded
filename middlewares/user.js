@@ -34,20 +34,20 @@ exports.userRegisterValidator = async (req, res, next) => {
 } 
 
 exports.userById = async (req, res, next) => {
-    User.findById(req._id).exec((err, user) => {
-        if (err || !user) {
-            return res.status(400).json(
-                formatMessage(
-                    STATUS.error,
-                    null,
-                    ERROR.targetNotFound,
-                    null
-                )
+    let user = await User.findById(req._id).exec();
+    
+    if (!user) {
+        return res.status(400).json(
+            formatMessage(
+                STATUS.error,
+                null,
+                ERROR.targetNotFound,
+                null
             )
-        }
+        )
+    }
 
-        //add user object in req with all user infos
-        req.user = user
-        next()
-    })
+    //add user object in req with all user infos
+    req.user = user
+    next()
 }

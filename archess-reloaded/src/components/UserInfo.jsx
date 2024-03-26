@@ -5,6 +5,18 @@ import { UserContext } from '../context/UserContext'
 export default function UserInfo(props) {
     const {user} = React.useContext(UserContext);
 
+    if (!user.value._requestMade.done) {
+
+        return <div className="loader" style={{height: '2rem'}}></div>
+
+    } else if (!user.value._requestMade.proceed) {
+
+        return <div className='-error'>
+            {user.value._requestMade.message}
+        </div>
+        
+    }
+
     if (!user.loggedIn) {
         return <UserLoggedOut initiateRadialGradientTransition={props.initiateRadialGradientTransition} setMainPanel={props.setMainPanel}/>
     }
@@ -16,14 +28,17 @@ export default function UserInfo(props) {
 }
 
 const UserLoggedOut = (props) => {
-    const {user, DEFAULT_PFP_URL} = React.useContext(UserContext);
+    const {user, DEFAULT_PFP_URL, __forceRegistrationPanel} = React.useContext(UserContext);
 
     /**
      * Will trigger radial gradient transition and disposal of LeftPanel
      * @param {String} panelName - Name of panel, also name of route attribute inside the CustomRouter in App 
      */
     const switchMainPanel = (panelName) => {
-        props.setMainPanel(panelName);
+        props.setMainPanel('registration');
+        
+        // * Read in UserContext
+        __forceRegistrationPanel.set(panelName);
     }
 
     return (
