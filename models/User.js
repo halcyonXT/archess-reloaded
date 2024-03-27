@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema({
     },
     salt: String,
     profilePicture: String,
+    description: {
+        type: String,
+        default: 'An Archess user'
+    }
 }, {
     timestamps: true
 })

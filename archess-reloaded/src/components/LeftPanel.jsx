@@ -74,7 +74,8 @@ export default function LeftPanel(props) {
     return (
         <div className="-main-left">
             <img 
-                src={theme === "dark" ? __LOGO_INV_WEBP : __LOGO_WEBP}
+                src={__LOGO_INV_WEBP}
+                style={theme === "dark" ? {} : {filter: "invert(1)"}}
                 className="-main-left-logo" />
             <div className='-main-left-button-wrapper' ref={buttonWrapperRef}>
                 <CustomRouter currentRoute={activePanel}>
@@ -100,3 +101,9 @@ export default function LeftPanel(props) {
         </div>
     )
 }
+
+/**
+ * <img 
+                src={theme === "dark" ? __LOGO_INV_WEBP : __LOGO_WEBP}
+                className="-main-left-logo" />
+ */

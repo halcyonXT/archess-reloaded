@@ -50,10 +50,11 @@ const log = (type, rmsg) => {
 
 const app = express();
 
-app.use(cors({
-    credentials: true,
-    origin: "http://localhost:5173"
-}));
+// app.use(cors({
+//     credentials: true,
+//     origin: "http://localhost:5173"
+// }));
+app.use(cors({origin: true, credentials: true}));
 app.use(json())
 app.use(urlencoded({ extended: false }))
 app.use(cookieParser());
@@ -102,7 +103,6 @@ const moveFetcher = async (fen, rawDepth) => {
 
     if ((String(depth)).charAt(0) === "L") {
         let raw = await getLPrefixMove(depth);
-        log("success", typeof raw);
 
         if (typeof raw !== 'object') {
             return buildSocketMessage(

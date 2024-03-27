@@ -3,7 +3,7 @@ const User = require('../models/User')
 const jwt = require("jsonwebtoken")
 require("dotenv").config()
 
-exports.register = async (req, res) => {
+exports.register = async (req, res, next) => {
     const usernameExists = await User.findOne({
         username: req.body.username
     })
@@ -34,12 +34,13 @@ exports.register = async (req, res) => {
     const user = new User(pusher)
     await user.save()
 
-    res.status(201).json(
+    /*res.status(201).json(
         formatMessage(
             STATUS.success,
             'Signup successful'
         )
-    )
+    )*/
+    next();
 }
 
 exports.login = async (req, res) => {
@@ -74,7 +75,7 @@ exports.login = async (req, res) => {
     })
 
     //persist the token as jwt in cookie with empty expiry date
-    res.cookie("jwt", token, {expire: new Date() + 9999, httpOnly: true});
+    res.cookie("jwt", token, {expire: new Date() + 9999, httpOnly: false, secure: true});
 
 
     //return the response with user
@@ -82,7 +83,12 @@ exports.login = async (req, res) => {
     return res.json(
         formatMessage(
             STATUS.success,
-            username
+            {
+                _id: user._id,
+                username,
+                email: user["email"],
+                description: user["description"]
+            }
         )
     )
 }
@@ -128,12 +134,14 @@ exports.logout = (req, res) => {
 }
 
 exports.getLoggedInUser = (req, res) => {
-    const { username, profilePicture } = req.user;
+    let fields = req.user._doc;
 
-    let data = {
-        username,
-        profilePicture
-    }
+    let data = {};
+
+    data._id = fields._id;
+    data.username = fields.username;
+    data.profilePicture = fields.profilePicture;
+    data.description = fields.description;
 
     return res.status(200).json(
         formatMessage(

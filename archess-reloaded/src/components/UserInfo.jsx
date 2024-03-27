@@ -10,24 +10,36 @@ export default function UserInfo(props) {
         return <div className="loader" style={{height: '2rem'}}></div>
 
     } else if (!user.value._requestMade.proceed) {
-
         return <div className='-error'>
-            {user.value._requestMade.message}
+            <div className="-pre">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"/></svg>
+            </div>
+            <div className='-over'></div>
+            <div className="-text">
+                {user.value._requestMade.message}
+            </div>
         </div>
+
         
     }
 
-    if (!user.loggedIn) {
+    /*if (!user.loggedIn) {
         return <UserLoggedOut initiateRadialGradientTransition={props.initiateRadialGradientTransition} setMainPanel={props.setMainPanel}/>
-    }
+    }*/
 
     return (
         <>
+            <UserContainer initiateRadialGradientTransition={props.initiateRadialGradientTransition} setMainPanel={props.setMainPanel}/>
         </>
     )
 }
 
-const UserLoggedOut = (props) => {
+const DEFAULT_LOGGED_OUT = ({
+    username: "Guest",
+    description: "A non-registered user"
+})
+
+const UserContainer = (props) => {
     const {user, DEFAULT_PFP_URL, __forceRegistrationPanel} = React.useContext(UserContext);
 
     /**
@@ -40,6 +52,38 @@ const UserLoggedOut = (props) => {
         // * Read in UserContext
         __forceRegistrationPanel.set(panelName);
     }
+
+    return (
+        <div className="-user-info">
+            <div className="-user-profile">
+                <img
+                    src={
+                        !user.value.profilePicture
+                        ?
+                        DEFAULT_PFP_URL
+                        :
+                        user.value.profilePicture
+                    }
+                />
+                <div className="-user-profile-text-wrapper">
+                    <div className="-user-profile-text-username">
+                        {user.value.loggedIn ? user.value.username : DEFAULT_LOGGED_OUT.username}
+                    </div>
+                    <div className="-user-profile-text-description">
+                        {user.value.loggedIn ? user.value.email : DEFAULT_LOGGED_OUT.description}
+                    </div>
+                </div>
+            </div>
+            <div className="-user-not-logged-button-wrapper">
+                <div className="-user-not-logged-button" onClick={() => switchMainPanel('log-in')}>LOG IN</div>
+                <div className="-user-not-logged-button" onClick={() => switchMainPanel('sign-up')}>SIGN UP</div>
+            </div>
+        </div>
+    )
+}
+
+/*const UserLoggedOut = (props) => {
+    
 
     return (
         <div className="-user-info">
@@ -68,4 +112,4 @@ const UserLoggedOut = (props) => {
             </div>
         </div>
     )
-}
+}*/

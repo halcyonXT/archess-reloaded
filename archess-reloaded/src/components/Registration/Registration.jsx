@@ -2,6 +2,7 @@ import React from 'react'
 import './Registration.css'
 import { UserContext } from '../../context/UserContext'
 import { gsap } from 'gsap/gsap-core'
+import validator from 'validator';
 
 const registrationAnimation = (animName, arg) => {
     switch (animName) {
@@ -88,12 +89,19 @@ const SLIDER_ANIMATION = {
     MOVE: .25
 }
 
-
+let errorMessageTimer = null;
 export default function Registration(props) {
-    const {__forceRegistrationPanel} = React.useContext(UserContext);
+    const {user, __forceRegistrationPanel, actions} = React.useContext(UserContext);
 
     const [panel, setPanel] = React.useState(__forceRegistrationPanel.value);
+    const [error, setError] = React.useState("");
     const sliderAnimationRef = React.useRef(null);
+
+    const [formData, setFormData] = React.useState({
+        username: "",
+        email: "",
+        password: ""
+    })
 
     const goingBackRef = React.useRef(null);
 
@@ -139,6 +147,78 @@ export default function Registration(props) {
         }
     }, [])
 
+    const updateFormData = (event, field) => {
+        setFormData(p => {
+            let outp = {...p};
+            outp[field] = event.target.value;
+            return outp;
+        })
+    }
+
+    const finishRegistration = async () => {
+        const passwordMatch = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,40}$/;
+
+        if ((validator.isEmpty(formData.username) && panel === "sign-up") || validator.isEmpty(formData.email) || validator.isEmpty("password")) {
+            return showError("Please fill all the neccessary fields");
+        }
+
+        if (!validator.isAscii(formData.username) && (panel === "sign-up")) {
+            return showError("Please enter a valid username")
+        }
+
+        if (!validator.isLength(formData.username, {min: 2, max: 30}) && (panel === "sign-up")) {
+            return showError("Username must be between 2 and 30 characters");
+        }
+
+        if (!validator.isEmail(formData.email)) {
+            return showError("Please enter a valid email")
+        }
+
+        if (!passwordMatch.test(formData.password)) {
+            return showError("Password requirements: At least 6 characters, at least one number, one uppercase and one lowercase letter");
+        }
+
+        if (panel === 'sign-up') {
+            let res = await actions.register({
+                ...formData
+            });
+
+            if (res.status === 'error') {
+                return showError(res.message);
+            }
+        }
+        if (panel === 'log-in') {
+            let res = await actions.login({
+                email: formData.email,
+                password: formData.password
+            })
+
+            if (res.status === 'error') {
+                return showError(res.message);
+            }
+        }
+
+        goBack();
+    }
+
+    /*React.useEffect(() => {
+        if (user.value._requestMade.done) {
+            if (user.value._requestMade.message) {
+                
+            }
+        }
+    }, [user.value._requestMade])*/
+
+    const showError = (message) => {
+        clearTimeout(errorMessageTimer);
+
+        setError(message);
+
+        errorMessageTimer = setTimeout(() => {
+            setError("");
+        }, 10000)
+    }
+
     return (
         <div className='-registration-wrapper'>
             <div className="-registration-navbar">
@@ -156,10 +236,34 @@ export default function Registration(props) {
                 <div className="-registration-slider-over"></div>
             </div>
             <div className='-inputs-wrapper'>
-                <input id='ghost-username-input' type="text" className="-registration-input -ghost-input" placeholder='' />
-                <input id='username-input' type="text" className="-registration-input" placeholder='Username' />
-                <input id='email-input' type="text" className="-registration-input" placeholder='Email' />
-                <input id='password-input' type="password" className="-registration-input" placeholder='Password' />
+                <input disabled id='ghost-username-input' type="text" className="-registration-input -ghost-input" placeholder='' />
+                <input onChange={(e) => updateFormData(e, "username")} value={formData.username} id='username-input' type="text" className="-registration-input" placeholder='Username' />
+                <input onChange={(e) => updateFormData(e, "email")} value={formData.email} id='email-input' type="text" className="-registration-input" placeholder='Email' />
+                <input onChange={(e) => updateFormData(e, "password")} value={formData.password} id='password-input' type="password" className="-registration-input" placeholder='Password' />
+                {
+                    user.value._requestMade.done
+                    ?
+                    <button className='-registration-finish' onClick={finishRegistration}>
+                        DONE
+                    </button>
+                    :
+                    <div className='flex' style={{justifyContent: 'center'}}>
+                        <div className="loader" style={{height: '2.25rem'}}></div>
+                    </div>
+                }
+                {
+                    error
+                    &&
+                    <div className='-error' style={{marginTop: '1.5rem'}}>
+                        <div className="-pre">
+                            <svg xmlns="http://www.w3.org/2000/svg" style={{height: '2rem', aspectRatio: '1 / 1', fill: '#FF6961'}} viewBox="0 -960 960 960"><path d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"/></svg>
+                        </div>
+                        <div className='-over'></div>
+                        <div className="-text">
+                            {error}
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     )

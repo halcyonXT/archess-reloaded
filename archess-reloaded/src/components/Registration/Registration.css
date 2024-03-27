@@ -9,6 +9,9 @@
     animation: scaleDownReg .5s ease-out 0s 1 normal forwards;
     overflow: hidden;
     padding: 0 var(--reg-padding) 0 var(--reg-padding);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 @keyframes scaleDownReg {
@@ -110,6 +113,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .-registration-back-button {
@@ -132,5 +136,28 @@
     margin-bottom: 2rem;
     align-items: center;
     justify-content: space-between;
+}
+
+.-registration-finish {
+    align-self: center;
+    font-size: 1.5rem;
+    font-family: var(--font-regular);
+    color: var(--main);
+    background: var(--inv);
+    border-radius: 0px;
+    font-weight: 500;
+    text-transform: uppercase;
+    padding: 0.4rem 2rem 0.4rem 2rem;
+    outline: 0;
+    border: 0;
+    margin: 4px;
+    cursor: pointer;
+    box-sizing: content-box;
+}
+
+.-registration-finish:hover {
+    margin: 2px;
+    border: 2px solid var(--main);
+    outline: 2px solid var(--inv);
 }
 

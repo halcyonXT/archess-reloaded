@@ -26,7 +26,7 @@
   --r-medium: #FFF100;
   --r-hard: #FC1116;
   --r-advanced: #7C05F5;
-  --r-expert: #FFFFFF
+  --r-expert: #CCCCCC
 }
 
 /* HTML: <div class="loader"></div> */
@@ -47,7 +47,7 @@
  66%,100% {background-position: 100% 0,50% 50%,0    100%}
 }
 
-.-error {
+/*.-error {
   background: rgba(255, 0, 0, 0.281);
   color: red;
   display: block;
@@ -56,8 +56,72 @@
   box-sizing: border-box;
   text-align: center;
   padding: .5rem;
+  font-weight: 500;
   font-family: var(--font-regular);
+}*/
+
+.-error {
+  position: relative;
+  background: var(--main);
+  
+  box-sizing: border-box;
+  padding: .4rem .8rem .4rem .8rem;
+  
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: 90%;
+  
 }
+
+.-error > .-text {
+  font-weight: 500;
+  text-align: left;
+  font-size: 1.1rem;
+  white-space: pre;
+  color: var(--inv);
+  font-family: var(--font-regular);
+  width: max-content;
+  height: max-content;
+}
+
+.-error > .-pre {
+  margin-right: 1rem !important;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.-error > .-pre > svg {
+  height: 2rem; 
+  aspectRatio: 1 / 1;
+  fill: #FF6961;
+}
+
+.-error > .-over {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, #ff696131, transparent);
+}
+
+*:autofill {
+  color: var(--inv);
+}
+
+/*.-error::before {
+  content: "⮿";
+  color: red;
+  font-weight: 800;
+  height: 90%;
+  margin: 5% 10% 5% 10%;
+  font-size: 2rem;
+  border-right: 1px solid var(--inv);
+}*/
+
 
 * {
   user-select: none;

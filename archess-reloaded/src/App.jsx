@@ -35,7 +35,7 @@ const DEFAULT_OPPONENT = ({
     background: null
 })
 
-let currentRadialTransitionDuration = 1;
+let currentRadialTransitionDuration = 1.5;
 
 function App() {
     const {theme, setTheme, background} = React.useContext(ThemeContext);
@@ -47,6 +47,8 @@ function App() {
     const [opponent, setOpponent] = React.useState({...DEFAULT_OPPONENT});
 
     const [mainPanel, setMainPanel] = React.useState(null);
+
+    const [performanceModeEnabled, setPerformanceModeEnabled] = React.useState(!!localStorage.getItem("archess-performance"))
 
     const [pBgs, setPBgs] = React.useState({
         left: {
@@ -62,23 +64,27 @@ function App() {
     const backgroundRef = React.useRef(null);
     const mainRef = React.useRef(null);
     const radialGradientRef = React.useRef(null);
+    const vantaReferenceRef = React.useRef(null);
 
+    const initiateVanta = () => {
+        vantaReferenceRef.current = VANTA.NET({
+            el: "#root",
+            mouseControls: false,
+            touchControls: false,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1,
+            scaleMobile: 1.00,
+            color: theme === "dark" ? 0xffffff : 0x0,
+            backgroundColor: theme === "dark" ? 0x0 : 0xffffff
+        })
+    }
     
     React.useEffect(() => {
-        setTimeout(() => {
-            /*vantaReference = VANTA.NET({
-                el: "#root",
-                mouseControls: false,
-                touchControls: false,
-                gyroControls: false,
-                minHeight: 200.00,
-                minWidth: 200.00,
-                scale: 1,
-                scaleMobile: 1.00,
-                color: theme === "dark" ? 0xffffff : 0x0,
-                backgroundColor: theme === "dark" ? 0x0 : 0xffffff
-            })*/
-        }, 5)
+        if (!performanceModeEnabled) {
+            initiateVanta();
+        }
 
         function preloadImage(url) {
             var img = new Image();
@@ -93,8 +99,8 @@ function App() {
     }, [])
 
     React.useEffect(() => {
-        if (vantaReference) {
-            vantaReference.setOptions({
+        if (vantaReferenceRef.current) {
+            vantaReferenceRef.current.setOptions({
                 color: theme === "dark" ? 0xffffff : 0x0,
                 backgroundColor: theme === "dark" ? 0x0 : 0xffffff
             })
@@ -102,7 +108,8 @@ function App() {
     }, [theme]);
 
     const initiateRadialGradientTransition = (duration = null) => {
-        let TRANSITION_DURATION = duration ?? 1;
+        let TRANSITION_DURATION = duration ?? 1.5;
+        currentRadialTransitionDuration = TRANSITION_DURATION;
 
         try {
 
@@ -123,6 +130,8 @@ function App() {
                 duration: TRANSITION_DURATION * 0.75,
             }
         );
+
+
         gsap.fromTo(
             radialGradientRef.current,
             {
@@ -132,14 +141,15 @@ function App() {
             {
                 // ! To
                 right: '-75%',
-                ease: 'power1.out',
+                ease: 'power2.out',
                 duration: TRANSITION_DURATION,
             }
         );
     }
 
     const initiateReverseRadialGradientTransition = (duration = null) => {
-        let TRANSITION_DURATION = duration ?? 1;
+        let TRANSITION_DURATION = duration ?? 1.5;
+        currentRadialTransitionDuration = TRANSITION_DURATION;
 
         gsap.fromTo(
             document.querySelector('.-main-left'),
@@ -151,7 +161,7 @@ function App() {
                 // ! To
                 opacity: "1",
                 duration: TRANSITION_DURATION * 0.75,
-                ease: 'power1.out',
+                ease: 'power2.out',
             }
         );
         gsap.fromTo(
@@ -261,6 +271,26 @@ function App() {
         }, currentRadialTransitionDuration * 3 * 1000)*/
     }
 
+    const togglePerformance = () => {
+        setPerformanceModeEnabled(p => !p)
+        
+    }
+    
+    React.useEffect(() => {
+        if (!performanceModeEnabled) {
+            localStorage.setItem("archess-performance", "");
+            setPerformanceModeEnabled(false);
+            vantaReferenceRef.current.destroy();
+            vantaReferenceRef.current = null
+        } else {
+            localStorage.setItem("archess-performance", "1");
+            setPerformanceModeEnabled(true);
+            if (!vantaReferenceRef.current) {
+                initiateVanta();
+            }
+        }
+    }, [performanceModeEnabled])
+
     return (
         <>
             <div className='-theme-select-wrapper'>
@@ -272,6 +302,10 @@ function App() {
                     <div className='flex flex-center pointer' onClick={() => setTheme("light")}>
                         <div className={`-ts-square ${theme === "light" ? "enabled" : ""}`}></div>
                         <div>LIGHT</div>
+                    </div>
+                    <div className='flex flex-center pointer' onClick={togglePerformance}>
+                        <div className={`-ts-square ${!performanceModeEnabled ? "enabled" : ""}`}></div>
+                        <div>PERFORMANCE</div>
                     </div>
                 </div>
                 <div className="-theme-select-notch"></div>
