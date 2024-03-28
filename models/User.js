@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const uuidv1 = require('uuidv1')
 const crypto = require('crypto')
+const { Post } = require('./CommunityModels');
 
 
 emailValidator = function(val){
@@ -34,10 +35,12 @@ const userSchema = new mongoose.Schema({
     },
     salt: String,
     profilePicture: String,
+    background: String,
     description: {
         type: String,
         default: 'An Archess user'
-    }
+    },
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }]
 }, {
     timestamps: true
 })

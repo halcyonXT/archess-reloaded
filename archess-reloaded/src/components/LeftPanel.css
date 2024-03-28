@@ -167,7 +167,7 @@
     color: var(--main);
     position: static;
     font-weight: 500;
-    opacity: .65;
+    opacity: .75;
 }
 
 .-robot-bottom {
@@ -262,6 +262,10 @@
     cursor: pointer;
 }
 
+.-user-not-logged-button > .-svg > svg {
+    fill: var(--main);
+}
+
 .-user-not-logged-button:hover {
     padding: 0;
     width: calc(48% - .25rem);
@@ -292,5 +296,39 @@
         transform: translate(0px, 0px) scale(1, 0.3) rotate(360deg);
     }
 }
+
+
+.-room-creation-waiting {
+    font-size: 1.5rem;
+    font-family: var(--font-regular);
+    color: var(--inv);
+    margin-left: 2%;
+}
+
+.-room-creation-timer {
+    font-size: 2rem;
+    font-family: var(--font-regular);
+    color: var(--inv);
+    margin-top: .5rem;
+    margin-left: 2%;
+}
+
+.-room-creation-link-wrapper {
+    margin-top: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .5rem;
+    font-family: var(--font-regular);
+    font-size: 1rem;
+    color: var(--inv);
+    margin-left: 2%;
+}
+
+.-room-creation-link-wrapper > .-svg > svg {
+    fill: var(--inv);
+    height: 1.2rem;
+}
+
 
 

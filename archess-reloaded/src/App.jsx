@@ -18,6 +18,8 @@ import { CustomRouter, Route } from './components/CustomRouter'
 import Registration from './components/Registration/Registration'
 import __AR from './assets/archess-webp.webp'
 import __AR_INV from './assets/archess-inverted-webp.webp'
+import CommunityPanel from './components/CommunityPanel/CommunityPanel'
+import { SocketContext } from './context/SocketContext'
 
 
 let vantaReference = null;
@@ -37,12 +39,15 @@ const DEFAULT_OPPONENT = ({
 
 let currentRadialTransitionDuration = 1.5;
 
+let radialGradientLastTo = "-75%";
 function App() {
     const {theme, setTheme, background} = React.useContext(ThemeContext);
     
     const {game} = React.useContext(GameContext);
 
     const {user} = React.useContext(UserContext);
+
+    const {socket} = React.useContext(SocketContext)
 
     const [opponent, setOpponent] = React.useState({...DEFAULT_OPPONENT});
 
@@ -82,6 +87,10 @@ function App() {
     }
     
     React.useEffect(() => {
+        socket.emit("client-init", ({
+            url: document.location.pathname
+        }))
+
         if (!performanceModeEnabled) {
             initiateVanta();
         }
@@ -107,9 +116,11 @@ function App() {
         }
     }, [theme]);
 
-    const initiateRadialGradientTransition = (duration = null) => {
-        let TRANSITION_DURATION = duration ?? 1.5;
+    const initiateRadialGradientTransition = (duration = null, to = "-75%") => {
+        let TRANSITION_DURATION = duration === "default" ? 1.5 : duration ?? 1.5;
         currentRadialTransitionDuration = TRANSITION_DURATION;
+
+        radialGradientLastTo = to;
 
         try {
 
@@ -140,7 +151,7 @@ function App() {
             },
             {
                 // ! To
-                right: '-75%',
+                right: to,
                 ease: 'power2.out',
                 duration: TRANSITION_DURATION,
             }
@@ -168,7 +179,8 @@ function App() {
             radialGradientRef.current,
             {
                 // ! From
-                right: '-75%',
+                //right: '-75%',
+                right: radialGradientLastTo,
             },
             {
                 // ! To
@@ -196,6 +208,10 @@ function App() {
 
         if (TRANSITION_DURATION != currentRadialTransitionDuration) {
             currentRadialTransitionDuration = TRANSITION_DURATION;
+        }
+
+        if (opts.type === "new-room") {
+            initiateRadialGradientTransition();
         }
 
         if (opts.type === 'bot') {
@@ -241,22 +257,28 @@ function App() {
                 profilePicture: null,
                 background: null
             })
+
+            setTimeout(() => {
+
+                // TODO - Write a more complex parser
+                game.set(prev => ({...prev, started: true, type: opts.type, options: opts.options}))
+            }, TRANSITION_DURATION * 1000)
             
         } 
 
         // * </TRANSITION>
 
         // * Timeout awaiting animation finish
-        setTimeout(() => {
-
-            // TODO - Write a more complex parser
-            game.set(prev => ({...prev, started: true, type: opts.type, options: opts.options}))
-        }, TRANSITION_DURATION * 1000)
+        
     }
 
-    const switchMainPanel = (panelName) => {
+    const switchMainPanel = (panelName, opts) => {
         if (panelName) {
-            initiateRadialGradientTransition();
+            if (opts?.to) {
+                initiateRadialGradientTransition("default", opts.to);
+            } else {
+                initiateRadialGradientTransition();
+            }
         } else {
             initiateReverseRadialGradientTransition();
         }
@@ -289,7 +311,8 @@ function App() {
                 initiateVanta();
             }
         }
-    }, [performanceModeEnabled])
+    }, [performanceModeEnabled]);
+
 
     return (
         <>
@@ -317,8 +340,8 @@ function App() {
                     <Route route="registration">
                         <Registration switchMainPanel={switchMainPanel}/>
                     </Route>
-                    <Route route="log-in">
-
+                    <Route route="community">
+                        <CommunityPanel switchMainPanel={switchMainPanel}/>
                     </Route>
                 </CustomRouter>
                 {

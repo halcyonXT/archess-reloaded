@@ -1,3 +1,4 @@
+
 // * EXPRESS
 const express = require('express');
 const { json, urlencoded } = express
@@ -14,7 +15,8 @@ require('dotenv').config()
 const http = require('http');
 
 // * SOCKET
-const socketio = require('socket.io');
+const socketio = require('socket.io')
+
 
 // ! USED FOR PACKET MESSAGE WITH "L" PREFIX PARSING
 const jsChessEngine = require('js-chess-engine')
@@ -26,27 +28,16 @@ const colors = require('colors');
 const connectDB = require('./src/config/database.js');
 
 
-const log = (type, rmsg) => {
-    if (!rmsg) return;
-    let msg = String(rmsg);
+const { log } = require('./log.js')
 
-    if (typeof msg !== 'string') {
-        log("err", "Unable to log: " + typeof msg);
+Array.prototype.removeElementFromArray = function(element) {
+    const index = this.indexOf(element);
+    if (index !== -1) {
+        this.splice(index, 1);
+        return true; // Element removed successfully
     }
-    switch (type) {
-        case "suc":
-        case "success":
-            console.log(msg.green.bold);
-            break
-        case "err":
-        case "error":
-            console.log(msg.red.bold);
-            break
-        default:
-            console.log(msg.blue.bold);
-            break
-    }
-}
+    return false; // Element not found in the array
+};
 
 const app = express();
 
@@ -70,13 +61,6 @@ const server = http.createServer(app);
 if (process.env.DB_CONNECT === "true") {
     connectDB();
 }
-
-const io = socketio(server, {
-    cors: {
-        origin: 'http://localhost:5173',
-        methods: ['GET', 'POST'],
-    },
-});
 
 const PORT = 8080;
 
@@ -162,23 +146,168 @@ const moveFetcher = async (fen, rawDepth) => {
 }
 
 
+const io = socketio(server, {
+    cors: {
+        origin: 'http://localhost:5173',
+        methods: ['GET', 'POST'],
+    },
+});
+
+
+
+const USER_DEFAULTS = () => ({
+    'url-init': null
+})
+
+const IP_TRACK_DEFAULTS = () => ({
+    socketConnections: 0,
+    roomsCreated: []
+})
+
+const SOCKET_TRACK_DEFAULTS = () => ({
+    roomsCreated: []
+})
+
+const ROOM_DEFAULTS = () => ({
+    _TTL_timer: null,
+    white: null,
+    black: null,
+})
+
 const users = {};
+const gameRooms = {};
+const ipTrackActions = {};
+const socketTrackActions = {};
+
+const LOCALHOST_LOOPBACK = "::1";
 
 io.on('connection', socket => {
     log("inf", "New WS connection");
 
-    users[socket.id] = {};
+    const clientIP = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    //console.log(clientIP) // is loopback
 
+    const killRoom = (roomID) => {
+        if (roomID === "socket" || ipTrackActions[clientIP]?.roomsCreated.includes(roomID)) {
+            if (!gameRooms[roomID]) return;
+
+            delete gameRooms[roomID];
+
+            if (roomID !== "socket") {
+                socketTrackActions[socket.id]?.roomsCreated?.removeElementFromArray(roomID);
+                ipTrackActions[clientIP]?.roomsCreated?.removeElementFromArray(roomID);
+            }
+
+            log("error", "Just killed room " + roomID)
+            // TODO - Inform all subscriptions the room is dead
+        }
+    }
+
+    users[socket.id] = {...USER_DEFAULTS()};
+    if (!ipTrackActions[clientIP]) {
+        ipTrackActions[clientIP] = {...IP_TRACK_DEFAULTS()};
+    } else {
+        ipTrackActions[clientIP].socketConnections++;
+    }
+
+    socketTrackActions[socket.id] = {...SOCKET_TRACK_DEFAULTS()};
+
+
+    // * will recieve url pathname, used for joining channels
+    socket.on('client-init', info => {
+
+        if (users[socket.id]) {
+            let urlParams = info.url.split('/');
+
+            if (!urlParams[0]) {
+                urlParams.shift()
+            }
+
+            if (urlParams.length === 0) return;
+
+            switch (urlParams[0]) {
+                case "room":
+                    // * If the game room was created previously by socket, join the user to the channel
+                    if (gameRooms[urlParams[1]]) {
+                        // TODO - perform rest of the neccessary checks to determine if client is joining as a spectator or as a player
+                        socket.join(urlParams[1]);
+                        log("success", "A client just joined existing room " + urlParams[1])
+                        users[socket.id]['url-init'] = info.url;
+                    } else {
+                        log("err", "A client tried joining fake room " + urlParams[1])
+                    }
+                    break
+            }
+
+        }
+    })
+
+    socket.on('kill-room', info => {
+        killRoom(info.gameRoomID)
+    })
+
+    socket.on('create-room', info => {
+        const RESPONSE_EVENT_NAME = "approve-room";
+        const TTL_EXPIRED_EVENT_NAME = "kill-room";
+
+        if (ipTrackActions[clientIP].roomsCreated.length < 4) {
+            gameRooms[info.gameRoomID] = {...ROOM_DEFAULTS()};
+
+            gameRooms[info.gameRoomID]._TTL_timer = setTimeout(() => {
+                // TODO - perform checks that will kill the room if nobody joins
+            }, 600000); // 10 minutes
+
+            ipTrackActions[clientIP].roomsCreated.push(info.gameRoomID);
+
+            socketTrackActions[socket.id].roomsCreated.push(info.gameRoomID);
+
+            socket.join(info.gameRoomID);
+
+            log("succ", socket.id + "client just created a room " + info.gameRoomID);
+
+            let socketMessage = buildSocketMessage("Room created successfully", "success", info.gameRoomID);
+            io.to(socket.id).emit(RESPONSE_EVENT_NAME, socketMessage);
+
+        } else {
+            let socketMessage = buildSocketMessage("Too many rooms created", "error", "");
+            io.to(socket.id).emit(RESPONSE_EVENT_NAME, socketMessage);
+        }
+    })
 
     socket.on('getMove', async (options) => {
         let socketMessage = await moveFetcher(options.fen, options.depth);
-        //log("inf", "Move made: " + socketMessage.status)
+        
         io.to(socket.id).emit("retrieveMove", socketMessage);
     })
 
     socket.on('disconnect', () => {
         delete users[socket.id];
-        log("err", "Disconnected - " + users[socket.id])
+        
+        if (socketTrackActions[socket.id]) {
+            for (let room of socketTrackActions[socket.id]?.roomsCreated) {
+                log("err", "Disconnection killing room " + room);
+                killRoom(room);
+            }
+        }
+
+        delete socketTrackActions[socket.id];
+        if (ipTrackActions[clientIP]) {
+            ipTrackActions[clientIP].socketConnections -= 1;
+            if (ipTrackActions[clientIP].socketConnections === 0) {
+                delete ipTrackActions[clientIP];
+            }
+        }
+        log("err", "Disconnected")
     })
 })
+
+
+/*setInterval(() => {
+    for (let key of Object.keys(socketTrackActions)) {
+        console.log(key + " : " + socketTrackActions[key].roomsCreated)
+    }
+    for (let key of Object.keys(users)) {
+        console.log(key + " : " + users[key]['url-init'])
+    }
+}, 1000)*/
 

@@ -49,3 +49,26 @@ export const register = async (userData) => {
     let proc = await raw.json();
     return proc;
 }
+
+export const login = async (userData) => {
+    if (!userData || (typeof userData !== 'object')) return invalidParameterError;
+    try {
+        if (!userData["email"] || !userData["password"]) return invalidParameterError;
+    } catch (ex) {return invalidParameterError}
+
+    let raw = await fetch(`${URL}/login`, {
+        method: 'POST',
+        'credentials': 'include',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+    });
+
+    if (!raw) {
+        return networkError;
+    }
+
+    let proc = await raw.json();
+    return proc;
+}

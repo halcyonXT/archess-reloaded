@@ -1,5 +1,5 @@
 import React, { createContext, useEffect } from 'react';
-import { getUserInfo, register } from '../api/api';
+import { getUserInfo, register, login } from '../api/api';
 import { buildApiErrorHandler } from '../api/buildApiErrorHandler';
 import { SERVER_ERROR, API_FILE_ERROR } from '../api/errorTypes';
 
@@ -21,7 +21,8 @@ const UserSchema = ({
     _id: "any",
     username: "string",
     profilePicture: "string",
-    email: "string"
+    email: "string",
+    description: "string"
 })
 
 
@@ -126,10 +127,62 @@ const UserContextProvider = ({ children }) => {
     const actions = {
 
         registrationInProgress: false,
+        loginInProgress: false,
 
-        login: () => {
+        login: async function(data){
+            if (this.loginInProgress) return;
+            this.loginInProgress = true;
+            setRequestMadeField(false, false, "");
 
+            const SUCCESS_MESSAGE = ({
+                status: "success",
+                data: ""
+            })
+
+            const ERROR_MESSAGE = (msg) => ({
+                status: 'error',
+                message: msg
+            })
+
+            let {lookup, getErrorMessage} = buildApiErrorHandler([
+                [SERVER_ERROR.invalidCredentials, true, "Invalid credentials. Please try again"],
+                [SERVER_ERROR.targetNotFound, true, "No user found"],
+                [SERVER_ERROR.loggedIn, true, "User is already logged in"],
+                [API_FILE_ERROR.networkError, true, <>A network error occurred<br/><u onClick={() => this.register(data)}>Click here to retry</u></>],
+                [API_FILE_ERROR.invalidParams, true, "AFE: Invalid parameters"]
+            ]);
+
+            const userData = await login(data);
+
+            this.loginInProgress = false;
+
+            if (!userData) {
+                let obj = getErrorMessage(API_FILE_ERROR.networkError);
+                setRequestMadeField(true, true, obj.message);
+                return ERROR_MESSAGE(obj.message);
+            }
+
+            if (userData.status === "error") {
+                let obj = getErrorMessage(userData.error);
+                setRequestMadeField(true, true, obj.message);
+                return ERROR_MESSAGE(obj.message);
+            }
+
+            let applyFields = applyDataToUserFields(userData.data, true);
+
+            setUser({
+                _requestMade: {
+                    done: true,
+                    proceed: true,
+                    message: ""
+                },
+                loggedIn: true,
+                ...applyFields
+            })
+
+            return SUCCESS_MESSAGE;
         },
+
         // * aka signup
         register: async function(data) {
             if (this.registrationInProgress) return;
@@ -142,6 +195,7 @@ const UserContextProvider = ({ children }) => {
                 [SERVER_ERROR.emailTaken, false, "Email is already in use. Please choose another"],
                 [SERVER_ERROR.usernameTaken, false, "Username is already in use. Please choose another"],
                 [SERVER_ERROR.invalidForm, false, "Invalid parameters. Please double-check your information"],
+                [SERVER_ERROR.loggedIn, false, "User is already logged in"],
                 [API_FILE_ERROR.networkError, false, <>A network error occurred<br/><u onClick={() => this.register(data)}>Click here to retry</u></>],
                 [API_FILE_ERROR.invalidParams, false, "AFE: Invalid parameters"]
             ]);
@@ -163,13 +217,13 @@ const UserContextProvider = ({ children }) => {
     
                 if (!userData) {
                     let obj = getErrorMessage(API_FILE_ERROR.networkError);
-                    setRequestMadeField(true, obj.proceed, obj.message);
+                    setRequestMadeField(true, true, obj.message);
                     return ERROR_MESSAGE(obj.message);
                 }
     
                 if (userData.status === "error") {
                     let obj = getErrorMessage(userData.error);
-                    setRequestMadeField(true, obj.proceed, obj.message);
+                    setRequestMadeField(true, true, obj.message);
                     return ERROR_MESSAGE(obj.message);
                 }
 

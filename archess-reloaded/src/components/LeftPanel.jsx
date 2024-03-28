@@ -8,6 +8,8 @@ import OfflineMatch from './LeftPanelPanels/OfflineMatch'
 import { CustomRouter, Route } from "./CustomRouter"
 import BotSelection from './LeftPanelPanels/BotSelection'
 import UserInfo from './UserInfo'
+import OnlineMatch from './LeftPanelPanels/OnlineMatch'
+import RoomCreation from './LeftPanelPanels/RoomCreation'
 
 const ANIMATION_STAGGER = 50; // ! in miliseconds
 
@@ -25,7 +27,8 @@ export default function LeftPanel(props) {
     const changeActivePanel = (targetPanel) => {
         if (TIMEOUT) return;
         
-        const PANEL_LIST = ["main-menu", "bot-selection", "offline-match"];
+        // ! might remove panel list check
+        const PANEL_LIST = ["main-menu", "bot-selection", "offline-match", "online-match", "room-creation"];
         let isBackButton = false;
 
         if (targetPanel === lastPanelRef.current[lastPanelRef.current.length - 1]) {
@@ -79,8 +82,18 @@ export default function LeftPanel(props) {
                 className="-main-left-logo" />
             <div className='-main-left-button-wrapper' ref={buttonWrapperRef}>
                 <CustomRouter currentRoute={activePanel}>
+                    <Route route="room-creation">
+                        <RoomCreation 
+                            changeActivePanel={changeActivePanel}
+                            lastPanel={lastPanelRef.current} />
+                    </Route>
                     <Route route="main-menu">
                         <MainMenu 
+                            changeActivePanel={changeActivePanel}
+                            lastPanel={lastPanelRef.current} />
+                    </Route>
+                    <Route route="online-match">
+                        <OnlineMatch
                             changeActivePanel={changeActivePanel}
                             lastPanel={lastPanelRef.current} />
                     </Route>
@@ -97,7 +110,7 @@ export default function LeftPanel(props) {
                     </Route>
                 </CustomRouter>
             </div>
-            <UserInfo initiateRadialGradientTransition={props.initiateRadialGradientTransition} setMainPanel={props.setMainPanel}/>
+            <UserInfo setMainPanel={props.setMainPanel}/>
         </div>
     )
 }

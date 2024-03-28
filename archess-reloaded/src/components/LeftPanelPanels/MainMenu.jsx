@@ -5,7 +5,7 @@ export default function MainMenu(props) {
     return (
         <>
             <div className='-main-left-button-style-wrapper'>
-                    <button className="-main-left-button bold">
+                    <button className="-main-left-button bold" onClick={() => props.changeActivePanel("online-match")}>
                         <Svg icon="globe_search" />
                         ONLINE MATCH
                     </button>
