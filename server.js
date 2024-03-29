@@ -156,6 +156,8 @@ const io = socketio(server, {
 
 
 const USER_DEFAULTS = () => ({
+    _ip: null,
+    _id: null,
     'url-init': null
 })
 
@@ -170,6 +172,8 @@ const SOCKET_TRACK_DEFAULTS = () => ({
 
 const ROOM_DEFAULTS = () => ({
     _TTL_timer: null,
+    _queue: [],
+    started: false,
     white: null,
     black: null,
 })
@@ -178,22 +182,23 @@ const users = {};
 const gameRooms = {};
 const ipTrackActions = {};
 const socketTrackActions = {};
+const quickMatchQueue = {};
 
 const LOCALHOST_LOOPBACK = "::1";
 
 io.on('connection', socket => {
     log("inf", "New WS connection");
 
-    const clientIP = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    
     //console.log(clientIP) // is loopback
 
-    const killRoom = (roomID) => {
-        if (roomID === "socket" || ipTrackActions[clientIP]?.roomsCreated.includes(roomID)) {
+    const killRoom = (roomID, socketReq = false) => {
+        if (socketReq || ipTrackActions[clientIP]?.roomsCreated.includes(roomID)) {
             if (!gameRooms[roomID]) return;
 
             delete gameRooms[roomID];
 
-            if (roomID !== "socket") {
+            if (!socketReq) {
                 socketTrackActions[socket.id]?.roomsCreated?.removeElementFromArray(roomID);
                 ipTrackActions[clientIP]?.roomsCreated?.removeElementFromArray(roomID);
             }
@@ -203,7 +208,31 @@ io.on('connection', socket => {
         }
     }
 
+    const initiateRoomGame = (roomID) => {
+        if (!gameRooms[roomID]) return;
+
+        const START_GAME_EVENT_NAME = "game-begin";
+
+        let isInitiatorWhite = Math.random() > 0.5;
+
+        gameRooms[roomID].started = true;
+
+        io.to(gameRooms[roomID]._queue[0]).emit(START_GAME_EVENT_NAME, ({
+            isWhite: isInitiatorWhite,
+            gameRoomID: roomID
+        }))
+
+        io.to(gameRooms[roomID]._queue[1]).emit(START_GAME_EVENT_NAME, ({
+            isWhite: !isInitiatorWhite,
+            gameRoomID: roomID
+        }))
+    }
+
+
     users[socket.id] = {...USER_DEFAULTS()};
+    const clientIP = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    users[socket.id]._ip = clientIP;
+
     if (!ipTrackActions[clientIP]) {
         ipTrackActions[clientIP] = {...IP_TRACK_DEFAULTS()};
     } else {
@@ -231,7 +260,13 @@ io.on('connection', socket => {
                     if (gameRooms[urlParams[1]]) {
                         // TODO - perform rest of the neccessary checks to determine if client is joining as a spectator or as a player
                         socket.join(urlParams[1]);
-                        log("success", "A client just joined existing room " + urlParams[1])
+                        log("success", "A client just joined existing room " + urlParams[1]);
+
+                        if (gameRooms[urlParams[1]]._queue.length < 2) {
+                            gameRooms[urlParams[1]]._queue.push(socket.id);
+                            initiateRoomGame(urlParams[1]);
+                        }
+
                         users[socket.id]['url-init'] = info.url;
                     } else {
                         log("err", "A client tried joining fake room " + urlParams[1])
@@ -240,6 +275,23 @@ io.on('connection', socket => {
             }
 
         }
+    });
+
+    socket.on('play-move', info => {
+        const getPlayerIndex = () => gameRooms[info.gameRoomID]?._queue.findIndex(sid => sid == socket.id);
+        const getOtherIndex = (ind) => ind === 0 ? 1 : 0;
+
+        let playerIndex = getPlayerIndex(info.gameRoomID);
+
+        if ((playerIndex === -1) || (typeof playerIndex !== 'number')) return;
+
+        let otherIndex = getOtherIndex(playerIndex);
+
+        // console.log(gameRooms[info.gameRoomID]._queue[otherIndex]);
+        // console.log("from: " + socket.id);
+        io.to(gameRooms[info.gameRoomID]._queue[otherIndex]).emit("opponent-move", ({
+            move: info.move
+        }))
     })
 
     socket.on('kill-room', info => {
@@ -247,14 +299,19 @@ io.on('connection', socket => {
     })
 
     socket.on('create-room', info => {
+        let clientIP = users[socket.id]._ip;
         const RESPONSE_EVENT_NAME = "approve-room";
-        const TTL_EXPIRED_EVENT_NAME = "kill-room";
+        const TTL_EXPIRED_EVENT_NAME = "vacate-room";
 
         if (ipTrackActions[clientIP].roomsCreated.length < 4) {
             gameRooms[info.gameRoomID] = {...ROOM_DEFAULTS()};
+            gameRooms[info.gameRoomID]._queue.push(socket.id);
 
             gameRooms[info.gameRoomID]._TTL_timer = setTimeout(() => {
                 // TODO - perform checks that will kill the room if nobody joins
+                if (!gameRooms[info.gameRoomID]?.started) {
+                    killRoom(info.gameRoomID, true);
+                }
             }, 600000); // 10 minutes
 
             ipTrackActions[clientIP].roomsCreated.push(info.gameRoomID);
@@ -281,6 +338,7 @@ io.on('connection', socket => {
     })
 
     socket.on('disconnect', () => {
+        let clientIP = users[socket.id]._ip;
         delete users[socket.id];
         
         if (socketTrackActions[socket.id]) {

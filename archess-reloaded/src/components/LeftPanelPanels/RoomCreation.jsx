@@ -83,18 +83,22 @@ export default function OnlineMatch(props) {
             }, 1000);
         }
 
+
         socket.emit("create-room", ({
             gameRoomID: ID
         }))
 
         socket.on("approve-room", interpretResponse);
 
+
+
+
         return () => {
             clearInterval(TTLTimerRef.current);
             socket.off("approve-room", interpretResponse);
-            socket.emit("kill-room", ({
+            /*socket.emit("kill-room", ({
                 gameRoomID: ID
-            }));
+            }));*/ // u dumb?
         }
 
     }, [])

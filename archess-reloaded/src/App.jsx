@@ -105,6 +105,16 @@ function App() {
         for (let pl of preloaders) {
             preloadImage(pl);
         }
+
+        const startGame = (res) => {
+            initiateGame({ type: 'private-online', options: { isWhite: res.isWhite, gameRoomID: res.gameRoomID }});
+        }
+
+        socket.on("game-begin", startGame);
+
+        return () => {
+            socket.off("game-begin", startGame);
+        }
     }, [])
 
     React.useEffect(() => {
@@ -210,8 +220,10 @@ function App() {
             currentRadialTransitionDuration = TRANSITION_DURATION;
         }
 
-        if (opts.type === "new-room") {
+        if (opts.type === "private-online") {
             initiateRadialGradientTransition();
+
+            // TODO
         }
 
         if (opts.type === 'bot') {
@@ -257,14 +269,13 @@ function App() {
                 profilePicture: null,
                 background: null
             })
-
-            setTimeout(() => {
-
-                // TODO - Write a more complex parser
-                game.set(prev => ({...prev, started: true, type: opts.type, options: opts.options}))
-            }, TRANSITION_DURATION * 1000)
-            
         } 
+
+        setTimeout(() => {
+
+            // TODO - Write a more complex parser
+            game.set(prev => ({...prev, started: true, type: opts.type, options: opts.options}))
+        }, TRANSITION_DURATION * 1000)
 
         // * </TRANSITION>
 

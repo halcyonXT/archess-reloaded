@@ -102,8 +102,9 @@ export default function Chessboard(props) {
 
     const {socket} = React.useContext(SocketContext);
 
+    console.log(__GAME_CTX)
     const [player, setPlayer] = React.useState({
-        color: 'white'
+        color: __GAME_CTX.game.value.options.isWhite ? "white" : "black"
     })
 
     const [board, changeBoard] = React.useState({
@@ -121,6 +122,11 @@ export default function Chessboard(props) {
             value: game.board(),
             playerMoves: game.moves()
         });
+
+        // ! If player is black and the game is against a bot, opponent move immediately
+        if (__GAME_CTX.game.value.type === "bot" && player.color === "black") {
+            opponentMove();
+        }
 
     }, [])
 
@@ -141,15 +147,36 @@ export default function Chessboard(props) {
             }
         }
 
+        const retrieveOpponentMoveHandler = response => {
+            let m = game.move(response.move);
+
+            const [from, to] = response.move.match(/[a-h][1-8]/g);
+            lastMove = {from, to};
+
+            changeBoard({
+                value: game.board(),
+                playerMoves: null
+            })
+        }
+
         if (__GAME_CTX.game.value.type === "bot") {
             socket.on("retrieveMove", retrieveMoveHandler);
         } else {
             socket.off("retrieveMove", retrieveMoveHandler);
         }
 
+        if (__GAME_CTX.game.value.type === "private-online") {
+            console.log("on playmove")
+            socket.on("opponent-move", retrieveOpponentMoveHandler)
+        } else {
+            socket.off("opponent-move", retrieveOpponentMoveHandler)
+        }
+
+
         return () => {
             try {
                 socket.off("retrieveMove", retrieveMoveHandler);
+                socket.off("opponent-move", retrieveOpponentMoveHandler)
             } catch (ex) {}
         }
 
@@ -195,6 +222,13 @@ export default function Chessboard(props) {
 
         lastMove = {from, to};
         currentHighlighted = EMPTY_CURRENT_HIGHLIGHTED();
+
+        if (__GAME_CTX.game.value.type === "private-online") {
+            socket.emit("play-move", ({
+                gameRoomID: __GAME_CTX.game.value.options.gameRoomID,
+                move: from + to
+            }))
+        }
 
         highlightSquares({available: [], from: null}, true);
         opponentMove();

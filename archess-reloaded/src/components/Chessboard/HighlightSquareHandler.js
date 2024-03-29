@@ -18,6 +18,7 @@ const SHADOW = {
  */
 export const highlightSquares = ({from, available}, forceCleanHighlighted = false) => {
     //if (currentHighlighted === available) return;
+    if (!(available instanceof Array)) return;
 
     if (!available || available.length === 0) {
         if (currentHighlighted || forceCleanHighlighted) {
