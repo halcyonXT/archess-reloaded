@@ -12,7 +12,10 @@ const GameContextProvider = ({ children }) => {
         type: null,
 
         // * Options specific to a game type. E.g. `difficulty` key for a "bot" type game
-        options: {}
+        options: {},
+
+        // ! TO REWORK
+        userOptions: {}
     })
 
 

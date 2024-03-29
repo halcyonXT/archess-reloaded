@@ -1,4 +1,3 @@
-
 exports.buildSocketMessage = (message, status, data) => {
     return ({
         message,
@@ -6,4 +5,3 @@ exports.buildSocketMessage = (message, status, data) => {
         data
     })
 }
-

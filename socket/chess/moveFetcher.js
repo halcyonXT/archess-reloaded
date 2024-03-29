@@ -1,5 +1,4 @@
-
-const {buildSocketMessage} = require('../buildSocketMessage.js')
+const {buildSocketMessage} = require('../buildSocketMessage.js');
 
 exports.moveFetcher = async (fen, rawDepth) => {
     let depth = rawDepth;
