@@ -27,6 +27,23 @@ export const getUserInfo = async() => {
     } catch (ex) {return networkError}
 }
 
+export const getTargetUserInfo = async(targetID) => {
+    try {
+        let res = await fetch(`${URL}/user/${targetID}`, {
+            method: 'GET',
+            'credentials': 'include'
+        });
+    
+        if (!res) {
+            return networkError;
+        }
+    
+        let proc = await res.json();
+    
+        return proc;
+    } catch (ex) {return networkError}
+}
+
 export const register = async (userData) => {
     if (!userData || (typeof userData !== 'object')) return invalidParameterError;
     try {

@@ -1,6 +1,9 @@
 const {log} = require('../../log.js');
 const {users, tracker, gameRooms} = require('../maps.js');
 const {buildSocketMessage} = require('../buildSocketMessage.js');
+const {
+    isMoveLegal
+} = require('../chess/chessValidators.js');
 
 const GameRoomManager = {
     io: null,
@@ -40,12 +43,24 @@ const GameRoomManager = {
 
         gameRoom.started = true;
 
+        clearTimeout(gameRoom._TTL_timer);
+
+        let user0 = UserManager.get(gameRoom._queue[0]);
+        let user1 = UserManager.get(gameRoom._queue[1]);
+
+        UserManager.subscribe(user0.socket.id, user1.socket.id);
+        UserManager.subscribe(user1.socket.id, user0.socket.id);
+
         this.io.to(gameRoom._queue[0]).emit(START_GAME_EVENT_NAME, ({
+            opponentId: user1._id,
+            opponentSid: gameRoom._queue[1],
             isWhite: isInitiatorWhite,
             gameRoomID: roomID
         }))
 
         this.io.to(gameRoom._queue[1]).emit(START_GAME_EVENT_NAME, ({
+            opponentId: user0._id,
+            opponentSid: gameRoom._queue[0],
             isWhite: !isInitiatorWhite,
             gameRoomID: roomID
         }))
@@ -79,12 +94,25 @@ const GameRoomManager = {
         let playerIndex = getPlayerIndex(info.gameRoomID);
         
         if ((playerIndex === -1) || (typeof playerIndex !== 'number')) return;
+
+        if (!isMoveLegal(info.fen, info.move)) {
+            this.io.to(gameRoom._queue[playerIndex]).emit("judge-move", ({
+                accepted: false
+            }))
+            return;
+        };
+
+        log("succ", "Legal move played")
         
         let gameRoom = this.get(info.gameRoomID);
         let otherIndex = getOtherIndex(playerIndex);
 
         // console.log(gameRooms[info.gameRoomID]._queue[otherIndex]);
         // console.log("from: " + socket.id);
+        this.io.to(gameRoom._queue[playerIndex]).emit("judge-move", ({
+            accepted: true
+        }))
+
         this.io.to(gameRoom._queue[otherIndex]).emit("opponent-move", ({
             move: info.move
         }))
@@ -96,9 +124,10 @@ const GameRoomManager = {
         const RESPONSE_EVENT_NAME = "approve-room";
         const TTL_EXPIRED_EVENT_NAME = "vacate-room";
 
+
         let ipTarget = TrackerManager.ip.get(clientIP);
 
-        if (ipTarget.roomsCreated.length < 4) {
+        if (ipTarget?.roomsCreated?.length < 4) {
             this.applyDefaults(info.gameRoomID);
 
             let gameRoom = this.get(info.gameRoomID);
@@ -131,11 +160,19 @@ const GameRoomManager = {
 
 
 const UserManager = {
+    io: null,
+
+    _setIO: function(io) {
+        this.io = io;
+    },
+
     _USER_DEFAULTS: (socket) => ({
         _id: null,
         _ip: null,
         socket: socket,
-        "url-init": null
+        "url-init": null,
+        // TODO - SUBSCRIBERS
+        subscribers: []
     }),
 
     applyDefaults: function(socket) {
@@ -151,7 +188,42 @@ const UserManager = {
         return users.get(key)
     },
 
+    subscribe: function(socketID, subscriberSocketID) {
+        let target = this.get(socketID);
+
+        if (target && !target?.subscribers.includes(subscriberSocketID)) {
+            target.subscribers.push(subscriberSocketID);
+        }
+    },
+
+    unsubscribe: function(socketID, subscriberSocketID) {
+        let target = this.get(socketID);
+
+        if (target && target?.subscribers.includes(subscriberSocketID)) {
+            target.subscribers.removeElementFromArray(subscriberSocketID);
+        }
+    },
+
+    requestUpdateFromSubscribers: function(socketID) {
+        let target = this.get(socketID);
+
+        log("inf", "Requesting subscriber update");
+
+        if (!target) return;
+
+        for (let subscriber of target.subscribers) {
+            this.io.to(subscriber).emit("update-subscriber", ({
+                sid: socketID,
+                id: target._id
+            }))
+        }
+    },
+
     requestRoomJoin: function(socket, info) {
+        if (info._id) {
+            let user = users.get(socket.id);
+            user._id = info._id;
+        }
         if (users.get(socket.id)) {
             let urlParams = info.url.split('/');
 
@@ -184,6 +256,20 @@ const UserManager = {
             }
 
         }
+    },
+
+    updateUser: function(socket, info) {
+        if (typeof info !== 'object') return;
+
+        let target = this.get(socket.id);
+
+        for (let key of Object.keys(info)) {
+            if (target.hasOwnProperty(key)) {
+                target[key] = info[key];
+            }
+        }
+
+        this.requestUpdateFromSubscribers(socket.id);
     },
 
     handleDisconnect: function(socket) {

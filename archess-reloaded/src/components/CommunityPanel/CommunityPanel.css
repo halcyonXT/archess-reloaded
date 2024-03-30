@@ -93,7 +93,7 @@
 }
 
 .-community-boards-list-item:hover {
-    border-left: 4px solid var(--inv);
+    border-left: 8px solid var(--inv);
     color: var(--main);
 }
 

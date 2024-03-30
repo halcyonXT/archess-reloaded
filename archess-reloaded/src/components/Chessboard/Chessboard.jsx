@@ -97,6 +97,7 @@ function asynchronize(blockingFunction, callback) {
     }, 0);
 }
 
+let moveValidationInProgress = false;
 export default function Chessboard(props) {
     const __GAME_CTX = React.useContext(GameContext);
 
@@ -212,26 +213,44 @@ export default function Chessboard(props) {
     }
 
 
-    const movePiece = (from, to) => {
-        game.move({from, to});
+    // ! Contrary to the name, this function is only for the client, DO NOT use this function to register opponent moves from the backend
+    const movePiece = async (from, to) => {
+        const acceptedMove = () => {
+            game.move({from, to});
 
-        changeBoard({
-            value: game.board(),
-            playerMoves: null
-        })
+            changeBoard({
+                value: game.board(),
+                playerMoves: null
+            })
 
-        lastMove = {from, to};
-        currentHighlighted = EMPTY_CURRENT_HIGHLIGHTED();
+            lastMove = {from, to};
+            currentHighlighted = EMPTY_CURRENT_HIGHLIGHTED();
 
-        if (__GAME_CTX.game.value.type === "private-online") {
-            socket.emit("play-move", ({
-                gameRoomID: __GAME_CTX.game.value.options.gameRoomID,
-                move: from + to
-            }))
+            highlightSquares({available: [], from: null}, true);
+            opponentMove();
         }
 
-        highlightSquares({available: [], from: null}, true);
-        opponentMove();
+        if (__GAME_CTX.game.value.type === "private-online") {
+            const determineVerdict = (res) => {
+                if (res.accepted) {
+                    acceptedMove();
+                }
+
+                socket.off("judge-move", determineVerdict);
+            }
+
+            socket.emit("play-move", ({
+                gameRoomID: __GAME_CTX.game.value.options.gameRoomID,
+                fen: game.fen(),
+                move: from + to
+            }))
+
+            socket.on("judge-move", determineVerdict);
+        
+        } else {
+
+            acceptedMove();
+        }
     }
 
     const registerClick = (e) => {

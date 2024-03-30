@@ -115,6 +115,10 @@ export default function OnlineMatch(props) {
     return (
         <>
             {
+                !request.done &&
+                <div className="loader" style={{height: '2.25rem', marginLeft: '2%'}}></div>
+            }
+            {
                 request.done && !request.approved
                 &&
                 <>
@@ -143,7 +147,7 @@ export default function OnlineMatch(props) {
                     <div className="-room-creation-timer">
                         {roomTTL > 0 && formatMilliseconds(roomTTL)}
                     </div>
-                    <div className="loader" style={{height: '2.25rem', marginLeft: '2%'}}></div>
+                    {/** There was a loader here */}
                 </>
             }
             <div className='-main-left-button-style-wrapper back-btn'>

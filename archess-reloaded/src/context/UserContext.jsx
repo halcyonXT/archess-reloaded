@@ -2,6 +2,7 @@ import React, { createContext, useEffect } from 'react';
 import { getUserInfo, register, login } from '../api/api';
 import { buildApiErrorHandler } from '../api/buildApiErrorHandler';
 import { SERVER_ERROR, API_FILE_ERROR } from '../api/errorTypes';
+import { SocketContext } from './SocketContext';
 
 const UserContext = createContext();
 
@@ -30,6 +31,7 @@ const UserSchema = ({
 
 const UserContextProvider = ({ children }) => {
     const [FRP, setFRP] = React.useState("sign-up");
+    const {socket} = React.useContext(SocketContext);
 
     const [user, setUser] = React.useState({
         _requestMade: {
@@ -42,6 +44,8 @@ const UserContextProvider = ({ children }) => {
         username: "Guest",
         profilePicture: null
     })
+
+    const userIDRef = React.useRef(null);
 
     const applyDataToUserFields = (data, getApplyFields = false) => {
         if (typeof data !== "object") return console.warn("applyDataToUserFields recieved non-object: " + typeof data);
@@ -94,35 +98,35 @@ const UserContextProvider = ({ children }) => {
     }
 
     let userInfoFetch = async() => {
-        let res = await getUserInfo();
-        let {proceed, message} = userFetchDecoder(res);
-
-        setRequestMadeField(false, false, "");
-
-        if (proceed) {
-            if (res?.status === "error") {
-                setUser({...DEFAULT_USER});
+        return new Promise(async (resolve, reject) => {
+            let res = await getUserInfo();
+            let {proceed, message} = userFetchDecoder(res);
+    
+            setRequestMadeField(false, false, "");
+    
+            if (proceed) {
+                if (res?.status === "error") {
+                    setUser({...DEFAULT_USER});
+                } else {
+                    // TODO - Gotten correct user info
+                    setUser({
+                        _requestMade: {
+                            done: true,
+                            proceed: true,
+                            message: ""
+                        },
+                        loggedIn: true,
+                        ...applyDataToUserFields(res.data, true)
+                    })
+                    //console.log(res.data)
+                }
+                resolve(true);
             } else {
-                // TODO - Gotten correct user info
-                setUser({
-                    _requestMade: {
-                        done: true,
-                        proceed: true,
-                        message: ""
-                    },
-                    loggedIn: true,
-                    ...applyDataToUserFields(res.data, true)
-                })
-                //console.log(res.data)
+                setRequestMadeField(true, proceed, message);
+                resolve(true);
             }
-        } else {
-            setRequestMadeField(true, proceed, message);
-        }
+        })
     }
-
-    React.useEffect(() => {
-        userInfoFetch();
-    }, []);
 
     const actions = {
 
@@ -247,6 +251,32 @@ const UserContextProvider = ({ children }) => {
         }
     }
 
+
+    React.useEffect(() => {
+        const UIF = async () => {
+            await userInfoFetch();
+
+            socket.emit("client-init", ({
+                url: document.location.pathname,
+                _id: user._id
+            }))
+        }
+
+        UIF();
+    }, []);
+
+    React.useEffect(() => {
+        if (user._id !== userIDRef.current) {
+            userIDRef.current = user._id;
+
+            socket.emit("update-user", ({
+                _id: user._id
+            }))
+        }
+    }, [user])
+
+    // console.log(user)
+    // console.log(userIDRef)
 
 
     return (

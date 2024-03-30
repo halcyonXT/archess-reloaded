@@ -18,11 +18,6 @@ const http = require('http');
 // const socketio = require('socket.io')
 
 
-// ! USED FOR PACKET MESSAGE WITH "L" PREFIX PARSING
-const jsChessEngine = require('js-chess-engine')
-const { aiMove } = jsChessEngine
-
-
 const cookieParser = require("cookie-parser")
 const colors = require('colors');
 const connectDB = require('./src/config/database.js');

@@ -51,3 +51,35 @@ exports.userById = async (req, res, next) => {
     req.user = user
     next()
 }
+
+exports.safeUserById = async (req, res) => {
+    let user = await User.findById(req.params["userId"]).exec();
+
+    const safeUserFields = ["username", "name", "profilePicture", "background"];
+    
+    if (!user) {
+        return res.status(400).json(
+            formatMessage(
+                STATUS.error,
+                null,
+                ERROR.targetNotFound,
+                null
+            )
+        )
+    }
+
+    let output = {};
+
+    for (let key of safeUserFields) {
+        if (user[key]) {
+            output[key] = user[key];
+        }
+    }
+
+    return res.status(200).json(
+        formatMessage(
+            STATUS.success,
+            output
+        )
+    )
+}

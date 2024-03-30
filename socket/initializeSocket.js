@@ -32,6 +32,7 @@ function initializeSocket(server) {
     } = require('./actions/Managers.js')
 
     GameRoomManager._setIO(io);
+    UserManager._setIO(io);
     
 
     io.on('connection', socket => {
@@ -56,6 +57,10 @@ function initializeSocket(server) {
         socket.on('client-init', info => {
             UserManager.requestRoomJoin(socket, info);
         });
+
+        socket.on("update-user", info => {
+            UserManager.updateUser(socket, info);
+        })
     
         socket.on('play-move', info => {
             GameRoomManager.registerMove(socket, info);

@@ -1,4 +1,8 @@
 const {buildSocketMessage} = require('../buildSocketMessage.js');
+// ! USED FOR PACKET MESSAGE WITH "L" PREFIX PARSING
+const jsChessEngine = require('js-chess-engine')
+const { aiMove } = jsChessEngine
+
 
 exports.moveFetcher = async (fen, rawDepth) => {
     let depth = rawDepth;
