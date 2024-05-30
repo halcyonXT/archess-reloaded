@@ -55,7 +55,7 @@ exports.userById = async (req, res, next) => {
 exports.safeUserById = async (req, res) => {
     let user = await User.findById(req.params["userId"]).exec();
 
-    const safeUserFields = ["username", "name", "profilePicture", "background"];
+    const safeUserFields = ["username", "name", "profilePicture", "background", "description"];
     
     if (!user) {
         return res.status(400).json(

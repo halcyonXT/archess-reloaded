@@ -40,6 +40,38 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: 'An Archess user'
     },
+    botsBeaten: {
+        be: {
+            type: String,
+            enum: ["0", "1", "2", "3"],
+            default: "0"
+        },
+        ea: {
+            type: String,
+            enum: ["0", "1", "2", "3"],
+            default: "0"
+        },
+        me: {
+            type: String,
+            enum: ["0", "1", "2", "3"],
+            default: "0"
+        },
+        ha: {
+            type: String,
+            enum: ["0", "1", "2", "3"],
+            default: "0"
+        },
+        ad: {
+            type: String,
+            enum: ["0", "1", "2", "3"],
+            default: "0"
+        },
+        ex: {
+            type: String,
+            enum: ["0", "1", "2", "3"],
+            default: "0"
+        }
+    },
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }]
 }, {
     timestamps: true

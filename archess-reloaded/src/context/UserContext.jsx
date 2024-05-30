@@ -15,7 +15,15 @@ const DEFAULT_USER = ({
     _id: null,
     loggedIn: false,
     username: "Guest",
-    profilePicture: null
+    profilePicture: null,
+    botsBeaten: {
+        be: 3,
+        ea: 3,
+        me: 3,
+        ha: 3,
+        ad: 3,
+        ex: 3
+    }
 })
 
 const UserSchema = ({
@@ -23,7 +31,8 @@ const UserSchema = ({
     username: "string",
     profilePicture: "string",
     email: "string",
-    description: "string"
+    description: "string",
+    botsBeaten: "object"
 })
 
 
@@ -33,7 +42,7 @@ const UserContextProvider = ({ children }) => {
     const [FRP, setFRP] = React.useState("sign-up");
     const {socket} = React.useContext(SocketContext);
 
-    const [user, setUser] = React.useState({
+    /*const [user, setUser] = React.useState({
         _requestMade: {
             done: false,
             proceed: false,
@@ -43,10 +52,12 @@ const UserContextProvider = ({ children }) => {
         _id: null,
         username: "Guest",
         profilePicture: null
-    })
+    })*/
+    const [user, setUser] = React.useState({...DEFAULT_USER})
 
     const userIDRef = React.useRef(null);
 
+    console.log(user)
     const applyDataToUserFields = (data, getApplyFields = false) => {
         if (typeof data !== "object") return console.warn("applyDataToUserFields recieved non-object: " + typeof data);
 

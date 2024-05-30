@@ -168,6 +168,14 @@
     position: static;
     font-weight: 500;
     opacity: .75;
+    --rt-height: 85%;
+    height: var(--rt-height);
+    min-height: var(--rt-height);
+    max-height: var(--rt-height);
+    overflow-y: auto;
+}
+.-robot-tale.unlockable {
+    
 }
 
 .-robot-bottom {
@@ -279,11 +287,11 @@
     right: 31%;
     top: 66.5%;
     height: 42%;
-    z-index: 1;
+    z-index: -1;
+    transform: scale(1, 0.3);
     box-sizing: content-box;
     border-radius: 50%;
     aspect-ratio: 1 / 1 !important;
-    transform: translate(0px, 0px) scale(1, 0.3);
     animation: rotateBotSvg 5s linear 0s infinite normal forwards;
     filter: brightness(0) contrast(200);
 }

@@ -1,9 +1,88 @@
 const {log} = require('../../log.js');
-const {users, tracker, gameRooms} = require('../maps.js');
+const {users, tracker, gameRooms, quickMatchQueue} = require('../maps.js');
 const {buildSocketMessage} = require('../buildSocketMessage.js');
 const {
     isMoveLegal
 } = require('../chess/chessValidators.js');
+
+const QuickQueueManager = {
+    io: null,
+
+    values: {
+        differenceTimeMultiplier: 1 / 2000,
+        maxWaitTimeBeforeAccepting: 120000 // in ms
+    },
+
+    _getWaitTime: function(diff) {
+        return (diff * this.values.differenceTimeMultiplier) * this.value.maxWaitTimeBeforeAccepting
+    },
+
+    _quickQueueFromSocket: (socket, elo) => ({
+        _TTL_timer: null,
+        awaitingMatch: {
+            target: null,
+            timer: null
+        },
+        initiator: socket,
+        elo
+    }),
+
+    assignAwaitToQQ: function(objOrg) {
+        let obj = {...objOrg};
+
+        let lowestDiff = Infinity;
+        let lowestDiffKey = null;
+        let elo = obj.elo;
+
+        for (let [key,value] of quickMatchQueue.entries()) {
+            let diff = Math.abs(obj.elo - value.elo);
+            if (diff < lowestDiff) {
+                lowestDiff = diff;
+                lowestDiffKey = key;
+            }
+        }
+
+        if (lowestDiffKey) {
+            let opponent = quickMatchQueue.get(lowestDiffKey);
+            let timeOut = this._getWaitTime(lowestDiff);
+
+            opponent.awaitingMatch.target = obj.initiator;
+            obj.awaitingMatch.target = opponent.initiator;
+
+            clearTimeout(opponent.awaitingMatch.timer);
+            clearTimeout(obj.awaitingMatch.timer);
+
+            opponent.awaitingMatch.timer = setTimeout(() => {
+                this.acceptMatch();
+            }, timeOut);
+
+            obj.awaitingMatch.timer = setTimeout(() => {
+                this.acceptMatch();
+            }, timeOut + 10);
+
+        }
+    },
+
+
+    generateQuickQueue: function(socket, elo) {
+        if (!quickMatchQueue.get(socket.id)) {
+            let qq = this._quickQueueFromSocket(socket, elo);
+
+            qq._TTL_timer = setTimeout(() => {
+                if (quickMatchQueue.get(socket.id)) {
+                    quickMatchQueue.delete(socket.id);
+                }
+            }, 600000);
+
+
+            quickMatchQueue.set(socket.id, qq);
+        }
+    },
+
+    acceptMatch: function() {
+
+    }
+}
 
 const GameRoomManager = {
     io: null,
@@ -68,12 +147,13 @@ const GameRoomManager = {
 
     // ! REQUIRES TRACKER
     killRoom: function(roomID, socket, socketReq = false) {
-        let clientIP = UserManager.get(socket.id)._ip;
+        let clientIP = UserManager.get(socket.id)?._ip;
         let ipTarget = TrackerManager.ip.get(clientIP);
 
         if (socketReq || ipTarget?.roomsCreated.includes(roomID)) {
             if (!this.get(roomID)) return;
 
+            clearTimeout(this.get(roomID)?._TTL_timer);
             gameRooms.delete(roomID);
 
             if (!socketReq) {
@@ -87,13 +167,12 @@ const GameRoomManager = {
     },
 
     registerMove: function(socket, info) {
-        const getPlayerIndex = () => this.get(info.gameRoomID)?._queue.findIndex(sid => sid == socket.id);
+        const getPlayerIndex = () => this.get(info.gameRoomID)?._queue
+                                        .findIndex(sid => sid == socket.id);
         const getOtherIndex = (ind) => ind === 0 ? 1 : 0;
-
-        
         let playerIndex = getPlayerIndex(info.gameRoomID);
-        
         if ((playerIndex === -1) || (typeof playerIndex !== 'number')) return;
+        let gameRoom = this.get(info.gameRoomID);
 
         if (!isMoveLegal(info.fen, info.move)) {
             this.io.to(gameRoom._queue[playerIndex]).emit("judge-move", ({
@@ -101,14 +180,9 @@ const GameRoomManager = {
             }))
             return;
         };
-
-        log("succ", "Legal move played")
         
-        let gameRoom = this.get(info.gameRoomID);
         let otherIndex = getOtherIndex(playerIndex);
 
-        // console.log(gameRooms[info.gameRoomID]._queue[otherIndex]);
-        // console.log("from: " + socket.id);
         this.io.to(gameRoom._queue[playerIndex]).emit("judge-move", ({
             accepted: true
         }))
@@ -124,30 +198,20 @@ const GameRoomManager = {
         const RESPONSE_EVENT_NAME = "approve-room";
         const TTL_EXPIRED_EVENT_NAME = "vacate-room";
 
-
         let ipTarget = TrackerManager.ip.get(clientIP);
 
         if (ipTarget?.roomsCreated?.length < 4) {
             this.applyDefaults(info.gameRoomID);
-
             let gameRoom = this.get(info.gameRoomID);
             gameRoom._queue.push(socket.id);
-
             gameRoom._TTL_timer = setTimeout(() => {
-                // TODO - perform checks that will kill the room if nobody joins
                 if (!gameRoom?.started) {
                     this.killRoom(info.gameRoomID, socket, true);
                 }
             }, 600000); // 10 minutes
-
             ipTarget.roomsCreated.push(info.gameRoomID);
-
             TrackerManager.socket.get(socket).roomsCreated.push(info.gameRoomID);
-
             socket.join(info.gameRoomID);
-
-            log("succ", socket.id + "client just created a room " + info.gameRoomID);
-
             let socketMessage = buildSocketMessage("Room created successfully", "success", info.gameRoomID);
             this.io.to(socket.id).emit(RESPONSE_EVENT_NAME, socketMessage);
 
@@ -171,7 +235,6 @@ const UserManager = {
         _ip: null,
         socket: socket,
         "url-init": null,
-        // TODO - SUBSCRIBERS
         subscribers: []
     }),
 
@@ -206,8 +269,6 @@ const UserManager = {
 
     requestUpdateFromSubscribers: function(socketID) {
         let target = this.get(socketID);
-
-        log("inf", "Requesting subscriber update");
 
         if (!target) return;
 

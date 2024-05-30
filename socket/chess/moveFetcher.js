@@ -12,13 +12,19 @@ exports.moveFetcher = async (fen, rawDepth) => {
 
     const getLPrefixMove = async (depth) => {
         let nd = String(depth).charAt(0) === "L" ? String(depth).slice(-1) : depth;
-        return aiMove(fen, nd);
+        let returner = null;
+        try {
+            returner = aiMove(fen, nd);
+        } catch (ex) {console.log("Lpref warn")}
+
+        return returner;
     }
+
 
     if ((String(depth)).charAt(0) === "L") {
         let raw = await getLPrefixMove(depth);
 
-        if (typeof raw !== 'object') {
+        if (typeof raw !== 'object' || !raw) {
             return buildSocketMessage(
                 "js-chess-engine error",
                 "error",
@@ -36,12 +42,20 @@ exports.moveFetcher = async (fen, rawDepth) => {
         fen,
         depth
     };
+    const maxDepthParams = {
+        fen,
+        depth: "15"
+    }
     
 
     const queryString = new URLSearchParams(params).toString();
+    const maxDepthQuery = new URLSearchParams(maxDepthParams).toString();
     const url = `${apiUrl}?${queryString}`;
+    const mdurl = `${apiUrl}?${maxDepthQuery}`;
 
     let raw = await fetch(url);
+
+    const maxDepthReplaceKeys = ["mate", "bestmove", "evaluation"];
 
     if (!raw.ok) {
         return buildSocketMessage(
@@ -53,9 +67,33 @@ exports.moveFetcher = async (fen, rawDepth) => {
 
     let processed = await raw.json();
 
+    let rawMD = await fetch(mdurl);
+
+    if (!rawMD.ok) {
+        return buildSocketMessage(
+            "Failure, retrying in 3s",
+            "error",
+            ({})
+        )
+    }
+
+    try {
+        let mdprocess = await rawMD.json();
+    
+        for (let key of maxDepthReplaceKeys) {
+            processed[key] = mdprocess[key];
+        }
+    
+        processed.maxDepthContinuation = mdprocess.continuation;
+    } catch (ex) {
+        console.log("mdproc failure")
+    }
+
     if (replaceCont) {
         processed.continuation = replaceCont;
     }
+    
+    //console.log(JSON.stringify(processed))
 
     //log("success", processed.continuation)
 

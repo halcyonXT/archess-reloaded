@@ -1,9 +1,13 @@
 .-chessboard-wrapper {
     display: flex;
+    gap: 3.5%;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     width: max-content;
     height: 100%;
+    width: 100%;
+    max-width: 40%;
 }
 
 @keyframes cb_appear {
@@ -18,8 +22,8 @@
 }
 
 .-chessboard {
-    animation: cb_appear 0.45s ease-out 0s 1 normal forwards;
-    height: 100%;
+    /*animation: cb_appear 0.45s ease-out 0s 1 normal forwards;*/
+    width: 100%;
     aspect-ratio: 1 / 1 !important;
     display: flex;
     flex-wrap: wrap;
@@ -34,6 +38,39 @@
     display: grid;
     place-items: center;
     position: relative;
+    /* might bottleneck */
+    transition-duration: 75ms;
+}
+
+.-checked {
+    box-shadow: inset 0px 0px 1rem var(--b-check) !important;
+}
+
+.-chessboard-promotion-modal {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    width: max-content;
+    display: flex;
+    gap: .6rem;
+    z-index: 2;
+    box-sizing: content-box;
+    background: var(--inv);
+}
+
+/* used for promotion modal */
+.-fullheight {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    cursor: pointer;
+}
+
+.-chessboard-promotion-modal.-toright {
+    left: 0;
+}
+
+.-chessboard-promotion-modal.-toleft {
+    right: 0;
 }
 
 .-chessboard-cell.odd:nth-of-type(odd) {
@@ -74,4 +111,38 @@
 .-chessboard-cell > svg > path {
     height: 100% !important;
     aspect-ratio: 1 / 1;
+}
+
+.-evaluation {
+    width: 101%;
+    height: 4%;
+    outline: 3px solid var(--inv);
+    background: black;
+    position: relative;
+}
+
+.-evaluation-numbers {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    left: 1%;
+    font-family: var(--font-regular);
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    width: 98%;
+}
+
+.-evaluation-invbar {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0% 0%;
+    backdrop-filter: invert(1);
 }

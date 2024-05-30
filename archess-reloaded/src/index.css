@@ -21,6 +21,9 @@
   --padding-on-main: 4rem;
   --opacity-on-main-frame: 0.9;
 
+  --b-check: rgba(0, 0, 255, 0.452);
+  --b-mate: rgba(255, 0, 0, 0.432);
+
   --r-beginner: #95F2DD;
   --r-easy: #79E200;
   --r-medium: #FFF100;
@@ -45,6 +48,32 @@
 @keyframes l18-2 {
  0%,33%   {background-position: 0    0,50% 50%,100% 100%}
  66%,100% {background-position: 100% 0,50% 50%,0    100%}
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 4px;
+  transition-duration: 0.15s;
+}
+
+/* Transparent track */
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Full-rounded thumb */
+::-webkit-scrollbar-thumb {
+  background-color: var(--inv);
+  border-radius: 3px;
+  transition-duration: 0.15s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--inv);
+}
+
+.popout-animation {
+  animation: popout 0.4s ease-out 0s 1 normal forwards;
 }
 
 /*.-error {
@@ -177,6 +206,10 @@ body, html {
   html {
     font-size: 10px;
   }
+}
+
+.w-full {
+  width: 100%;
 }
 
 .flex {

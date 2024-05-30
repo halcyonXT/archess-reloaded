@@ -71,7 +71,7 @@ exports.login = async (req, res) => {
 
     //generate a token with user id and jwt secret
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "24h"
+        expiresIn: "48h"
     })
 
     //persist the token as jwt in cookie with empty expiry date
@@ -142,6 +142,7 @@ exports.getLoggedInUser = (req, res) => {
     data.username = fields.username;
     data.profilePicture = fields.profilePicture;
     data.description = fields.description;
+    data.botsBeaten = fields.botsBeaten;
 
     return res.status(200).json(
         formatMessage(

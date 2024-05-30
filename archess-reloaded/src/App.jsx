@@ -97,7 +97,7 @@ function App() {
         }
 
         const startGame = async (res) => {
-            console.log(res);
+            //console.log(res);
             if (res.opponentSid) {
                 // let opp = await getTargetUserInfo(res.opponentId);
                 // let data = opp?.data;
@@ -273,17 +273,24 @@ function App() {
                 }
             }))
 
+            //console.log(opts)
+
             game.set(p => {
                 let outp = {...p};
                 outp.opponent = {
                     _id: null,
                     isBot: true,
-                    name: opts.options.botName,
+                    username: opts.options.botName,
+                    description: opts.options.botDescription,
                     profilePicture: null,
                     background: null
                 }
                 return outp;
             });
+
+
+            // ! if random
+            opts.options.isWhite = Math.random() > 0.5;
 
         } 
 

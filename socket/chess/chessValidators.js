@@ -3,11 +3,12 @@ const { Chess } = require('chess.js');
 const isMoveLegal = (fen, move) => {
     try {
         const ch = new Chess(fen);
-        ch.move(move);
+        let m = ch.move(move);
         return true;
     } catch (ex) {
         return false;
     }
+    //console.log(m)
 }
 
 const isGameOver = (fen) => {
